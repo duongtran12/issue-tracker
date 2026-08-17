@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: issue-tracker-db
+    environment:
+      POSTGRES_DB: issue_tracker
+      POSTGRES_USER: issue_tracker
+      POSTGRES_PASSWORD: issue_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U issue_tracker -d issue_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: issue-tracker-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/issue_tracker
+      DB_USERNAME: issue_tracker
+      DB_PASSWORD: issue_tracker
+      JWT_SECRET: change-me-in-production
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
