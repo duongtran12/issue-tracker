@@ -22,3 +22,8 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-in-production-with-at-least-256-bits-secret-key-for-security}
+    expiration: ${JWT_EXPIRATION:3600000}
