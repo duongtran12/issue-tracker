@@ -13,6 +13,8 @@ import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.ProjectRepository;
 import com.duong.issue_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,30 @@ public class IssueService {
                 .map(this::toResponse)
                 .toList();
     }
+
+            @Transactional(readOnly = true)
+            public Page<IssueResponse> search(
+                Long projectId,
+                String username,
+                IssueStatus status,
+                IssuePriority priority,
+                String assigneeUsername,
+                String keyword,
+                Pageable pageable) {
+            findAccessibleProject(projectId, username);
+            String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+            String normalizedAssignee = assigneeUsername == null || assigneeUsername.isBlank()
+                ? null
+                : assigneeUsername.trim();
+            return issueRepository.search(
+                    projectId,
+                    status,
+                    priority,
+                    normalizedAssignee,
+                    normalizedKeyword,
+                    pageable)
+                .map(this::toResponse);
+            }
 
     @Transactional(readOnly = true)
     public IssueResponse findById(Long projectId, Long issueId, String username) {
