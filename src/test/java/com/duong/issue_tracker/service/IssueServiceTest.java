@@ -16,6 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
@@ -23,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class IssueServiceTest {
@@ -90,6 +94,29 @@ class IssueServiceTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> issueService.findAll(1L, "intruder"));
     }
+
+            @Test
+            void search_shouldTrimTextFiltersAndMapPage() {
+            User owner = user("duong", 10L);
+            Project project = project(1L, owner);
+            Issue issue = new Issue();
+            issue.setId(5L);
+            issue.setProject(project);
+            issue.setReporter(owner);
+
+            Pageable pageable = PageRequest.of(1, 10);
+            when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+            when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+            when(issueRepository.search(1L, null, IssuePriority.HIGH, "assignee", "login", pageable))
+                .thenReturn(new PageImpl<>(java.util.List.of(issue), pageable, 11));
+
+            var response = issueService.search(
+                1L, "duong", null, IssuePriority.HIGH, " assignee ", " login ", pageable);
+
+            assertThat(response.getTotalElements()).isEqualTo(11);
+            assertThat(response.getContent()).hasSize(1);
+            verify(issueRepository).search(1L, null, IssuePriority.HIGH, "assignee", "login", pageable);
+            }
 
     private Project project(Long id, User owner) {
         Project project = new Project();
