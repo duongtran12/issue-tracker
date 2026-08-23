@@ -6,6 +6,7 @@ import com.duong.issue_tracker.entity.Issue;
 import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssuePriority;
+import com.duong.issue_tracker.enums.IssueHistoryEventType;
 import com.duong.issue_tracker.enums.IssueStatus;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class IssueService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
+    private final IssueHistoryService issueHistoryService;
 
     @Transactional
     public IssueResponse create(Long projectId, IssueRequest request, String username) {
@@ -37,7 +40,10 @@ public class IssueService {
         issue.setProject(project);
         issue.setReporter(reporter);
         apply(issue, request, projectId);
-        return toResponse(issueRepository.save(issue));
+        Issue savedIssue = issueRepository.save(issue);
+        issueHistoryService.record(savedIssue, reporter, IssueHistoryEventType.CREATED,
+            null, null, null);
+        return toResponse(savedIssue);
     }
 
     @Transactional(readOnly = true)
@@ -83,8 +89,16 @@ public class IssueService {
     public IssueResponse update(Long projectId, Long issueId, IssueRequest request, String username) {
         findAccessibleProject(projectId, username);
         Issue issue = findIssue(projectId, issueId);
+        User actor = findUser(username);
+        String oldTitle = issue.getTitle();
+        String oldDescription = issue.getDescription();
+        IssueStatus oldStatus = issue.getStatus();
+        IssuePriority oldPriority = issue.getPriority();
+        String oldAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
         apply(issue, request, projectId);
-        return toResponse(issueRepository.save(issue));
+        Issue savedIssue = issueRepository.save(issue);
+        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee);
+        return toResponse(savedIssue);
     }
 
     @Transactional
@@ -99,6 +113,31 @@ public class IssueService {
         issue.setStatus(request.status() == null ? IssueStatus.TODO : request.status());
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
+    }
+
+    private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
+                               IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee) {
+        if (!Objects.equals(oldTitle, issue.getTitle())) {
+            record(issue, actor, IssueHistoryEventType.UPDATED, "title", oldTitle, issue.getTitle());
+        }
+        if (!Objects.equals(oldDescription, issue.getDescription())) {
+            record(issue, actor, IssueHistoryEventType.UPDATED, "description", oldDescription, issue.getDescription());
+        }
+        if (oldStatus != issue.getStatus()) {
+            record(issue, actor, IssueHistoryEventType.STATUS_CHANGED, "status", oldStatus.name(), issue.getStatus().name());
+        }
+        if (oldPriority != issue.getPriority()) {
+            record(issue, actor, IssueHistoryEventType.PRIORITY_CHANGED, "priority", oldPriority.name(), issue.getPriority().name());
+        }
+        String newAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
+        if (!Objects.equals(oldAssignee, newAssignee)) {
+            record(issue, actor, IssueHistoryEventType.ASSIGNEE_CHANGED, "assignee", oldAssignee, newAssignee);
+        }
+    }
+
+    private void record(Issue issue, User actor, IssueHistoryEventType eventType,
+                        String fieldName, String oldValue, String newValue) {
+        issueHistoryService.record(issue, actor, eventType, fieldName, oldValue, newValue);
     }
 
     private User resolveAssignee(Long projectId, String assigneeUsername) {

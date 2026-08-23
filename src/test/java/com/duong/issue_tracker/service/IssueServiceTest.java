@@ -43,6 +43,9 @@ class IssueServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private IssueHistoryService issueHistoryService;
+
     @InjectMocks
     private IssueService issueService;
 
