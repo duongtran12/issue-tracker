@@ -1,5 +1,5 @@
 CREATE TABLE issues (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     project_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description VARCHAR(5000),
