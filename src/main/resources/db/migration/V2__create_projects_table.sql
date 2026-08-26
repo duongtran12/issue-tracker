@@ -1,5 +1,5 @@
 CREATE TABLE projects (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     project_key VARCHAR(20) NOT NULL,
     description VARCHAR(1000),

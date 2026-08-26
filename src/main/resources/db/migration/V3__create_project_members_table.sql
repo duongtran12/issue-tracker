@@ -1,5 +1,5 @@
 CREATE TABLE project_members (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     project_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'MEMBER',

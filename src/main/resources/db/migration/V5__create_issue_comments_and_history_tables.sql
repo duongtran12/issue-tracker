@@ -1,5 +1,5 @@
 CREATE TABLE issue_comments (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     issue_id BIGINT NOT NULL,
     author_id BIGINT NOT NULL,
     body VARCHAR(5000) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE issue_comments (
 );
 
 CREATE TABLE issue_history (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     issue_id BIGINT NOT NULL,
     actor_id BIGINT,
     event_type VARCHAR(30) NOT NULL,
