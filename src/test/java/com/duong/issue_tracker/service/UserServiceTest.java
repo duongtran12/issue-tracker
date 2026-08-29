@@ -72,4 +72,23 @@ class UserServiceTest {
 
         assertThrows(DuplicateResourceException.class, () -> userService.register(request));
     }
+
+    @Test
+    void getProfile_shouldReturnCurrentUserInfo() {
+        User user = new User();
+        user.setId(7L);
+        user.setUsername("duong");
+        user.setFullName("Duong Tran");
+        user.setEmail("duong@example.com");
+        user.setRole(Role.USER);
+
+        when(userRepository.findByUsername("duong")).thenReturn(java.util.Optional.of(user));
+
+        UserResponse response = userService.getProfile("duong");
+
+        assertThat(response.id()).isEqualTo(7L);
+        assertThat(response.username()).isEqualTo("duong");
+        assertThat(response.email()).isEqualTo("duong@example.com");
+        assertThat(response.role()).isEqualTo(Role.USER.name());
+    }
 }
