@@ -74,4 +74,18 @@ public class UserService {
                 jwtExpirationMs / 1000
         );
     }
+
+    @Transactional(readOnly = true)
+    public UserResponse getProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new DuplicateResourceException("User not found: " + username));
+
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getRole().name()
+        );
+    }
 }
