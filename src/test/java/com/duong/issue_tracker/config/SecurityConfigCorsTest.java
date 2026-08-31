@@ -1,6 +1,7 @@
 package com.duong.issue_tracker.config;
 
 import com.duong.issue_tracker.security.JwtAuthenticationFilter;
+import com.duong.issue_tracker.security.RestAuthenticationEntryPoint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -20,9 +21,12 @@ class SecurityConfigCorsTest {
     @Mock
     private UserDetailsService userDetailsService;
 
+    @Mock
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
     @Test
     void shouldAllowCorsPreflightForFrontendOrigins() {
-        SecurityConfig securityConfig = new SecurityConfig(jwtAuthenticationFilter, userDetailsService);
+        SecurityConfig securityConfig = new SecurityConfig(jwtAuthenticationFilter, userDetailsService, restAuthenticationEntryPoint);
 
         MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/auth/login");
         request.addHeader("Origin", "http://localhost:3000");
