@@ -77,6 +77,11 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponse getProfile(String username) {
+        return getByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new DuplicateResourceException("User not found: " + username));
 

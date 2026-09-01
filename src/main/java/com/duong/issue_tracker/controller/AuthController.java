@@ -39,4 +39,9 @@ public class AuthController {
     public ResponseEntity<UserResponse> me(Authentication authentication) {
         return ResponseEntity.ok(userService.getProfile(authentication.getName()));
     }
+
+    @GetMapping("/users/{username}")
+    public ResponseEntity<UserResponse> getByUsername(@org.springframework.web.bind.annotation.PathVariable String username) {
+        return ResponseEntity.ok(userService.getByUsername(username));
+    }
 }
