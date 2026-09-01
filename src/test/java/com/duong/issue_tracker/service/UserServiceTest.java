@@ -91,4 +91,22 @@ class UserServiceTest {
         assertThat(response.email()).isEqualTo("duong@example.com");
         assertThat(response.role()).isEqualTo(Role.USER.name());
     }
+
+    @Test
+    void getByUsername_shouldReturnMatchingUserProfile() {
+        User user = new User();
+        user.setId(9L);
+        user.setUsername("alice");
+        user.setFullName("Alice Nguyen");
+        user.setEmail("alice@example.com");
+        user.setRole(Role.USER);
+
+        when(userRepository.findByUsername("alice")).thenReturn(java.util.Optional.of(user));
+
+        UserResponse response = userService.getByUsername("alice");
+
+        assertThat(response.id()).isEqualTo(9L);
+        assertThat(response.username()).isEqualTo("alice");
+        assertThat(response.fullName()).isEqualTo("Alice Nguyen");
+    }
 }
