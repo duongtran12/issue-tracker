@@ -5,6 +5,7 @@ import com.duong.issue_tracker.dto.response.UserResponse;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.Role;
 import com.duong.issue_tracker.exception.DuplicateResourceException;
+import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -108,5 +109,12 @@ class UserServiceTest {
         assertThat(response.id()).isEqualTo(9L);
         assertThat(response.username()).isEqualTo("alice");
         assertThat(response.fullName()).isEqualTo("Alice Nguyen");
+    }
+
+    @Test
+    void getByUsername_shouldThrowNotFound_whenUserDoesNotExist() {
+        when(userRepository.findByUsername("missing")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getByUsername("missing"));
     }
 }
