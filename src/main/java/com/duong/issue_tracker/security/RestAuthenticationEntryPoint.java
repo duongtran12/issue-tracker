@@ -22,8 +22,13 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setHeader("Pragma", "no-cache");
 
         String body = "{\"timestamp\":\"" + java.time.Instant.now() + "\",\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\",\"path\":\""
-                + request.getRequestURI() + "\"}";
+                + escapeJson(request.getRequestURI()) + "\"}";
 
         response.getWriter().write(body);
+    }
+
+    private String escapeJson(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\r", "\\r").replace("\n", "\\n");
     }
 }

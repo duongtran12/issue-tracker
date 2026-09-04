@@ -23,7 +23,12 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
         response.setHeader("Pragma", "no-cache");
 
         String body = "{\"timestamp\":\"" + Instant.now() + "\",\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\",\"path\":\""
-                + request.getRequestURI() + "\"}";
+                + escapeJson(request.getRequestURI()) + "\"}";
         response.getWriter().write(body);
+    }
+
+    private String escapeJson(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\r", "\\r").replace("\n", "\\n");
     }
 }
