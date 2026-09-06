@@ -24,4 +24,15 @@ class RestAccessDeniedHandlerTest {
         assertThat(response.getContentAsString()).contains("\"status\":403");
         assertThat(response.getContentAsString()).contains("\"path\":\"/api/projects/1\"");
     }
+
+    @Test
+    void handle_shouldEscapeSpecialCharactersInPath() throws Exception {
+        RestAccessDeniedHandler handler = new RestAccessDeniedHandler();
+        HttpServletRequest request = new MockHttpServletRequest("DELETE", "/api/projects/\\quoted");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        handler.handle(request, response, new AccessDeniedException("Access denied"));
+
+        assertThat(response.getContentAsString()).contains("\\\\quoted");
+    }
 }

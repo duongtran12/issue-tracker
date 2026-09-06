@@ -24,4 +24,15 @@ class RestAuthenticationEntryPointTest {
         assertThat(response.getContentAsString()).contains("\"status\":401");
         assertThat(response.getContentAsString()).contains("\"path\":\"/api/projects\"");
     }
+
+    @Test
+    void commence_shouldEscapeSpecialCharactersInPath() throws Exception {
+        RestAuthenticationEntryPoint entryPoint = new RestAuthenticationEntryPoint();
+        HttpServletRequest request = new MockHttpServletRequest("GET", "/api/projects/\"quoted");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        entryPoint.commence(request, response, new org.springframework.security.authentication.BadCredentialsException("Bad credentials"));
+
+        assertThat(response.getContentAsString()).contains("\\\"quoted");
+    }
 }

@@ -87,6 +87,25 @@ class IssueServiceTest {
     }
 
     @Test
+    void create_shouldTrimAssigneeUsername() {
+        User reporter = user("duong", 10L);
+        User assignee = user("other", 11L);
+        Project project = project(1L, reporter);
+        IssueRequest request = new IssueRequest("Fix login", null, null, IssuePriority.HIGH, " other ");
+
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "other")).thenReturn(true);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(userRepository.findByUsername("other")).thenReturn(Optional.of(assignee));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.assigneeUsername()).isEqualTo("other");
+    }
+
+    @Test
     void findAll_shouldRejectUserOutsideProject() {
         User owner = user("owner", 1L);
         Project project = project(1L, owner);
