@@ -144,10 +144,11 @@ public class IssueService {
         if (assigneeUsername == null || assigneeUsername.isBlank()) {
             return null;
         }
-        if (!projectMemberRepository.existsByProjectIdAndUserUsername(projectId, assigneeUsername)) {
-            throw new ResourceNotFoundException("Assignee is not a member of project: " + assigneeUsername);
+        String normalizedUsername = assigneeUsername.trim();
+        if (!projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
+            throw new ResourceNotFoundException("Assignee is not a member of project: " + normalizedUsername);
         }
-        return findUser(assigneeUsername);
+        return findUser(normalizedUsername);
     }
 
     private Project findAccessibleProject(Long projectId, String username) {
