@@ -77,6 +77,25 @@ class ProjectServiceTest {
                 () -> projectService.findById(1L, "duong"));
     }
 
+        @Test
+        void addMember_shouldTrimUsernameBeforeLookup() {
+        User owner = user("duong");
+        User member = user("alice");
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong")).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "alice")).thenReturn(false);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(member));
+        when(projectMemberRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = projectService.addMember(1L, " alice ", "duong");
+
+        assertThat(response.username()).isEqualTo("alice");
+        verify(userRepository).findByUsername("alice");
+        }
+
     private User user(String username) {
         User user = new User();
         user.setId(10L);
