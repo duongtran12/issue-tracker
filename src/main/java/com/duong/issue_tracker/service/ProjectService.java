@@ -77,11 +77,12 @@ public class ProjectService {
     @Transactional
     public ProjectMemberResponse addMember(Long projectId, String username, String ownerUsername) {
         Project project = findOwnedProject(projectId, ownerUsername);
-        if (projectMemberRepository.existsByProjectIdAndUserUsername(projectId, username)) {
-            throw new DuplicateResourceException("User is already a project member: " + username);
+        String normalizedUsername = username.trim();
+        if (projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
+            throw new DuplicateResourceException("User is already a project member: " + normalizedUsername);
         }
 
-        User user = findUser(username);
+        User user = findUser(normalizedUsername);
         return toMemberResponse(addMembership(project, user, ProjectMemberRole.MEMBER));
     }
 
@@ -97,8 +98,9 @@ public class ProjectService {
     @Transactional
     public void removeMember(Long projectId, String username, String ownerUsername) {
         findOwnedProject(projectId, ownerUsername);
-        ProjectMember member = projectMemberRepository.findByProjectIdAndUserUsername(projectId, username)
-                .orElseThrow(() -> new ResourceNotFoundException("Project member not found: " + username));
+        String normalizedUsername = username.trim();
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserUsername(projectId, normalizedUsername)
+            .orElseThrow(() -> new ResourceNotFoundException("Project member not found: " + normalizedUsername));
         if (member.getRole() == ProjectMemberRole.OWNER) {
             throw new IllegalArgumentException("Project owner cannot be removed");
         }
