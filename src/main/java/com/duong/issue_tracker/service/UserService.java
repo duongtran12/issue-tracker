@@ -34,19 +34,24 @@ public class UserService {
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
+        String normalizedUsername = normalizeText(request.username());
+        String normalizedFullName = normalizeText(request.fullName());
+        String normalizedEmail = normalizeText(request.email());
+        String normalizedPassword = normalizeText(request.password());
+
+        if (userRepository.existsByUsername(normalizedUsername)) {
             throw new DuplicateResourceException("Username already exists");
         }
 
-        if (userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new DuplicateResourceException("Email already exists");
         }
 
         User user = new User();
-        user.setUsername(request.username());
-        user.setFullName(request.fullName());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setUsername(normalizedUsername);
+        user.setFullName(normalizedFullName);
+        user.setEmail(normalizedEmail);
+        user.setPassword(passwordEncoder.encode(normalizedPassword));
         user.setRole(Role.USER);
 
         User savedUser = userRepository.save(user);
@@ -61,10 +66,13 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request) throws AuthenticationException {
+        String normalizedUsername = normalizeText(request.username());
+        String normalizedPassword = normalizeText(request.password());
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
+                        normalizedUsername,
+                        normalizedPassword
                 )
         );
 
@@ -83,8 +91,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponse getByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        String normalizedUsername = normalizeText(username);
+        User user = userRepository.findByUsername(normalizedUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + normalizedUsername));
 
         return new UserResponse(
                 user.getId(),
@@ -93,5 +102,9 @@ public class UserService {
                 user.getEmail(),
                 user.getRole().name()
         );
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim();
     }
 }
