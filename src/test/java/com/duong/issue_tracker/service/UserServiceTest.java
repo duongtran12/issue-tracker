@@ -61,6 +61,32 @@ class UserServiceTest {
     }
 
     @Test
+    void register_shouldTrimWhitespaceFromUserInput() {
+        RegisterRequest request = new RegisterRequest(
+                "  duong  ",
+                "  Duong Tran   ",
+                "   duong@example.com   ",
+                " Password123! "
+        );
+
+        when(userRepository.existsByUsername("duong")).thenReturn(false);
+        when(userRepository.existsByEmail("duong@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("Password123!")).thenReturn("encoded-password");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId(1L);
+            return user;
+        });
+
+        UserResponse response = userService.register(request);
+
+        assertThat(response.username()).isEqualTo("duong");
+        assertThat(response.fullName()).isEqualTo("Duong Tran");
+        assertThat(response.email()).isEqualTo("duong@example.com");
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
     void register_shouldThrowException_whenUsernameAlreadyExists() {
         RegisterRequest request = new RegisterRequest(
                 "duong",
