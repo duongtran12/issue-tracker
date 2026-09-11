@@ -34,7 +34,7 @@ public class IssueCommentService {
         IssueComment comment = new IssueComment();
         comment.setIssue(issue);
         comment.setAuthor(author);
-        comment.setBody(request.body());
+        comment.setBody(normalizeBody(request.body()));
         return toResponse(commentRepository.save(comment));
     }
 
@@ -55,7 +55,7 @@ public class IssueCommentService {
                 .filter(item -> item.getIssue().getId().equals(issueId))
                 .filter(item -> item.getAuthor().getUsername().equals(username))
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
-        comment.setBody(request.body());
+        comment.setBody(normalizeBody(request.body()));
         return toResponse(commentRepository.save(comment));
     }
 
@@ -83,6 +83,10 @@ public class IssueCommentService {
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+    }
+
+    private String normalizeBody(String body) {
+        return body.trim();
     }
 
     private CommentResponse toResponse(IssueComment comment) {
