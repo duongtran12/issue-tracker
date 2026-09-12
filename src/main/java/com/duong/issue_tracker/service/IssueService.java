@@ -65,10 +65,10 @@ public class IssueService {
                 String keyword,
                 Pageable pageable) {
             findAccessibleProject(projectId, username);
-            String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+            String normalizedKeyword = keyword == null || keyword.isBlank() ? null : normalizeText(keyword);
             String normalizedAssignee = assigneeUsername == null || assigneeUsername.isBlank()
                 ? null
-                : assigneeUsername.trim();
+                : normalizeText(assigneeUsername);
             return issueRepository.search(
                     projectId,
                     status,
@@ -144,7 +144,7 @@ public class IssueService {
         if (assigneeUsername == null || assigneeUsername.isBlank()) {
             return null;
         }
-        String normalizedUsername = assigneeUsername.trim();
+        String normalizedUsername = normalizeText(assigneeUsername);
         if (!projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
             throw new ResourceNotFoundException("Assignee is not a member of project: " + normalizedUsername);
         }
