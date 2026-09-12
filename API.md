@@ -48,11 +48,13 @@ Response contains `accessToken`, `tokenType`, and `expiresIn` seconds.
 GET /api/auth/me
 ```
 
-### Public user profile
+### User profile by username
 
 ```http
 GET /api/auth/users/{username}
 ```
+
+Requires authentication.
 
 ## Projects
 
@@ -141,3 +143,34 @@ Text fields are trimmed and repeated whitespace is normalized before persistence
 ## Errors
 
 Errors are returned as JSON. Common status codes are `400` for validation, `401` for missing or invalid authentication, `403` for denied access, `404` for missing resources, and `409` for duplicate resources.
+
+Validation errors include an `errors` object keyed by request field:
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "errors": {
+    "title": "Issue title is required"
+  }
+}
+```
+
+Frontend flow: register or login, store `accessToken`, send it as a Bearer token for protected requests, and clear it when a request returns `401`.
+
+## Quick cURL examples
+
+```bash
+# Login and copy the accessToken from the response.
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"duong","password":"Password123!"}'
+
+# List the current user's projects.
+curl http://localhost:8080/api/projects \
+  -H "Authorization: Bearer <accessToken>"
+
+# Search issues in a project.
+curl "http://localhost:8080/api/projects/1/issues?keyword=login&page=0&size=20" \
+  -H "Authorization: Bearer <accessToken>"
+```
