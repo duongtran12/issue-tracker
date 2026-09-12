@@ -98,7 +98,7 @@ class ProjectServiceTest {
     }
 
         @Test
-        void addMember_shouldTrimUsernameBeforeLookup() {
+        void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
         User member = user("alice");
         Project project = new Project();
@@ -110,7 +110,7 @@ class ProjectServiceTest {
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(member));
         when(projectMemberRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var response = projectService.addMember(1L, " alice ", "duong");
+        var response = projectService.addMember(1L, "  alice  ", "duong");
 
         assertThat(response.username()).isEqualTo("alice");
         verify(userRepository).findByUsername("alice");
