@@ -108,8 +108,8 @@ public class IssueService {
     }
 
     private void apply(Issue issue, IssueRequest request, Long projectId) {
-        issue.setTitle(request.title());
-        issue.setDescription(request.description());
+        issue.setTitle(normalizeText(request.title()));
+        issue.setDescription(normalizeNullableText(request.description()));
         issue.setStatus(request.status() == null ? IssueStatus.TODO : request.status());
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
@@ -170,6 +170,14 @@ public class IssueService {
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private String normalizeNullableText(String value) {
+        return value == null ? null : value.trim();
     }
 
     private IssueResponse toResponse(Issue issue) {

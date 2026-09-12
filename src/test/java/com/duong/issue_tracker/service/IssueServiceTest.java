@@ -72,6 +72,27 @@ class IssueServiceTest {
     }
 
     @Test
+    void create_shouldTrimIssueTitleAndDescription() {
+        User reporter = user("duong", 10L);
+        Project project = project(1L, reporter);
+        IssueRequest request = new IssueRequest("  Fix login  ", "  Handle expired token  ", null, null, null);
+
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> {
+            Issue issue = invocation.getArgument(0);
+            issue.setId(5L);
+            return issue;
+        });
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.title()).isEqualTo("Fix login");
+        assertThat(response.description()).isEqualTo("Handle expired token");
+    }
+
+    @Test
     void create_shouldRejectAssigneeOutsideProject() {
         User reporter = user("duong", 10L);
         Project project = project(1L, reporter);
