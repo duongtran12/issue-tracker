@@ -108,11 +108,11 @@ class IssueServiceTest {
     }
 
     @Test
-    void create_shouldTrimAssigneeUsername() {
+    void create_shouldNormalizeAssigneeUsername() {
         User reporter = user("duong", 10L);
         User assignee = user("other", 11L);
         Project project = project(1L, reporter);
-        IssueRequest request = new IssueRequest("Fix login", null, null, IssuePriority.HIGH, " other ");
+        IssueRequest request = new IssueRequest("Fix login", null, null, IssuePriority.HIGH, "  other  ");
 
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
@@ -139,7 +139,7 @@ class IssueServiceTest {
     }
 
             @Test
-            void search_shouldTrimTextFiltersAndMapPage() {
+            void search_shouldNormalizeTextFiltersAndMapPage() {
             User owner = user("duong", 10L);
             Project project = project(1L, owner);
             Issue issue = new Issue();
@@ -154,7 +154,7 @@ class IssueServiceTest {
                 .thenReturn(new PageImpl<>(java.util.List.of(issue), pageable, 11));
 
             var response = issueService.search(
-                1L, "duong", null, IssuePriority.HIGH, " assignee ", " login ", pageable);
+                1L, "duong", null, IssuePriority.HIGH, "  assignee  ", "  login  ", pageable);
 
             assertThat(response.getTotalElements()).isEqualTo(11);
             assertThat(response.getContent()).hasSize(1);

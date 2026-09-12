@@ -37,7 +37,7 @@ public class UserService {
         String normalizedUsername = normalizeText(request.username());
         String normalizedFullName = normalizeText(request.fullName());
         String normalizedEmail = normalizeText(request.email());
-        String normalizedPassword = normalizeText(request.password());
+        String normalizedPassword = normalizeCredential(request.password());
 
         if (userRepository.existsByUsername(normalizedUsername)) {
             throw new DuplicateResourceException("Username already exists");
@@ -67,7 +67,7 @@ public class UserService {
 
     public LoginResponse login(LoginRequest request) throws AuthenticationException {
         String normalizedUsername = normalizeText(request.username());
-        String normalizedPassword = normalizeText(request.password());
+        String normalizedPassword = normalizeCredential(request.password());
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -105,6 +105,10 @@ public class UserService {
     }
 
     private String normalizeText(String value) {
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
+    }
+
+    private String normalizeCredential(String value) {
         return value == null ? null : value.trim();
     }
 }

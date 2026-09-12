@@ -85,7 +85,7 @@ public class ProjectService {
     @Transactional
     public ProjectMemberResponse addMember(Long projectId, String username, String ownerUsername) {
         Project project = findOwnedProject(projectId, ownerUsername);
-        String normalizedUsername = username.trim();
+        String normalizedUsername = normalizeText(username);
         if (projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
             throw new DuplicateResourceException("User is already a project member: " + normalizedUsername);
         }
@@ -106,7 +106,7 @@ public class ProjectService {
     @Transactional
     public void removeMember(Long projectId, String username, String ownerUsername) {
         findOwnedProject(projectId, ownerUsername);
-        String normalizedUsername = username.trim();
+        String normalizedUsername = normalizeText(username);
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserUsername(projectId, normalizedUsername)
             .orElseThrow(() -> new ResourceNotFoundException("Project member not found: " + normalizedUsername));
         if (member.getRole() == ProjectMemberRole.OWNER) {
@@ -127,7 +127,7 @@ public class ProjectService {
     }
 
     private String normalizeText(String value) {
-        return value == null ? null : value.trim();
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private ProjectMember addMembership(Project project, User user, ProjectMemberRole role) {
