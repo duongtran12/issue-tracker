@@ -157,3 +157,20 @@ Validation errors include an `errors` object keyed by request field:
 ```
 
 Frontend flow: register or login, store `accessToken`, send it as a Bearer token for protected requests, and clear it when a request returns `401`.
+
+## Quick cURL examples
+
+```bash
+# Login and copy the accessToken from the response.
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"duong","password":"Password123!"}'
+
+# List the current user's projects.
+curl http://localhost:8080/api/projects \
+  -H "Authorization: Bearer <accessToken>"
+
+# Search issues in a project.
+curl "http://localhost:8080/api/projects/1/issues?keyword=login&page=0&size=20" \
+  -H "Authorization: Bearer <accessToken>"
+```
