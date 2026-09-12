@@ -105,6 +105,6 @@ public class UserService {
     }
 
     private String normalizeText(String value) {
-        return value == null ? null : value.trim();
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 }

@@ -127,7 +127,7 @@ public class ProjectService {
     }
 
     private String normalizeText(String value) {
-        return value == null ? null : value.trim();
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private ProjectMember addMembership(Project project, User user, ProjectMemberRole role) {

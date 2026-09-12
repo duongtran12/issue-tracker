@@ -64,7 +64,7 @@ class UserServiceTest {
     void register_shouldTrimWhitespaceFromUserInput() {
         RegisterRequest request = new RegisterRequest(
                 "  duong  ",
-                "  Duong Tran   ",
+                "  Duong   Tran   ",
                 "   duong@example.com   ",
                 " Password123! "
         );

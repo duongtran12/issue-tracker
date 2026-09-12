@@ -86,7 +86,7 @@ public class IssueCommentService {
     }
 
     private String normalizeBody(String body) {
-        return body.trim();
+        return body == null ? null : body.trim().replaceAll("\\s+", " ");
     }
 
     private CommentResponse toResponse(IssueComment comment) {

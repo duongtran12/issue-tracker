@@ -173,11 +173,11 @@ public class IssueService {
     }
 
     private String normalizeText(String value) {
-        return value == null ? null : value.trim();
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private String normalizeNullableText(String value) {
-        return value == null ? null : value.trim();
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private IssueResponse toResponse(Issue issue) {
