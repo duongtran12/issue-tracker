@@ -48,11 +48,13 @@ Response contains `accessToken`, `tokenType`, and `expiresIn` seconds.
 GET /api/auth/me
 ```
 
-### Public user profile
+### User profile by username
 
 ```http
 GET /api/auth/users/{username}
 ```
+
+Requires authentication.
 
 ## Projects
 
