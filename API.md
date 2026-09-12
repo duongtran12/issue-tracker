@@ -143,3 +143,17 @@ Text fields are trimmed and repeated whitespace is normalized before persistence
 ## Errors
 
 Errors are returned as JSON. Common status codes are `400` for validation, `401` for missing or invalid authentication, `403` for denied access, `404` for missing resources, and `409` for duplicate resources.
+
+Validation errors include an `errors` object keyed by request field:
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "errors": {
+    "title": "Issue title is required"
+  }
+}
+```
+
+Frontend flow: register or login, store `accessToken`, send it as a Bearer token for protected requests, and clear it when a request returns `401`.
