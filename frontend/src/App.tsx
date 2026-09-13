@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { apiFetch, login, logout } from './api'
+import { ApiError, apiFetch, login, logout } from './api'
 import type { BackendIssue, IssuePage, Project } from './api'
 import './App.css'
 
@@ -49,7 +49,13 @@ function App() {
         setProjects(result)
         setActiveProjectId((current) => current ?? result[0]?.id ?? null)
       })
-      .catch((reason: Error) => { setError(reason.message); setToken(null); logout() })
+      .catch((reason: Error) => {
+        setError(reason.message)
+        if (reason instanceof ApiError && reason.status === 401) {
+          setToken(null)
+          logout()
+        }
+      })
       .finally(() => setLoading(false))
   }, [token])
 
