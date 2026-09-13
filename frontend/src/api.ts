@@ -40,6 +40,16 @@ type ApiErrorBody = {
   errors?: Record<string, string>
 }
 
+export class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('issue_tracker_token')
   const headers = new Headers(options.headers)
@@ -53,7 +63,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
       ? Object.entries(body.errors).map(([field, message]) => `${field}: ${message}`).join('; ')
       : ''
     const message = body?.message ?? `Request failed with status ${response.status}`
-    throw new Error(fieldErrors ? `${message}: ${fieldErrors}` : message)
+    throw new ApiError(fieldErrors ? `${message}: ${fieldErrors}` : message, response.status)
   }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
