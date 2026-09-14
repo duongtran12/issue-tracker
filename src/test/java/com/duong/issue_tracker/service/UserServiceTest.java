@@ -5,6 +5,7 @@ import com.duong.issue_tracker.dto.response.UserResponse;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.Role;
 import com.duong.issue_tracker.exception.DuplicateResourceException;
+import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,5 +72,32 @@ class UserServiceTest {
         when(userRepository.existsByUsername("duong")).thenReturn(true);
 
         assertThrows(DuplicateResourceException.class, () -> userService.register(request));
+    }
+
+    @Test
+    void getProfile_shouldReturnCurrentUser_whenUsernameExists() {
+        User user = new User();
+        user.setId(7L);
+        user.setUsername("duong");
+        user.setFullName("Duong Tran");
+        user.setEmail("duong@example.com");
+        user.setRole(com.duong.issue_tracker.enums.Role.USER);
+
+        when(userRepository.findByUsername("duong")).thenReturn(java.util.Optional.of(user));
+
+        UserResponse response = userService.getProfile("duong");
+
+        assertThat(response.id()).isEqualTo(7L);
+        assertThat(response.username()).isEqualTo("duong");
+        assertThat(response.fullName()).isEqualTo("Duong Tran");
+        assertThat(response.email()).isEqualTo("duong@example.com");
+        assertThat(response.role()).isEqualTo(com.duong.issue_tracker.enums.Role.USER.name());
+    }
+
+    @Test
+    void getProfile_shouldThrowException_whenUsernameDoesNotExist() {
+        when(userRepository.findByUsername("missing")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getProfile("missing"));
     }
 }

@@ -7,6 +7,7 @@ import com.duong.issue_tracker.dto.response.UserResponse;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.Role;
 import com.duong.issue_tracker.exception.DuplicateResourceException;
+import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.UserRepository;
 import com.duong.issue_tracker.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,19 @@ public class UserService {
                 token,
                 "Bearer",
                 jwtExpirationMs / 1000
+        );
+    }
+
+    public UserResponse getProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getRole().name()
         );
     }
 }
