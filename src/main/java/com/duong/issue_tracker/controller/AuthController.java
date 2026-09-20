@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,12 +37,12 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> me(Authentication authentication) {
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
         return ResponseEntity.ok(userService.getProfile(authentication.getName()));
     }
 
     @GetMapping("/users/{username}")
-    public ResponseEntity<UserResponse> getByUsername(@org.springframework.web.bind.annotation.PathVariable String username) {
+    public ResponseEntity<UserResponse> getByUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getByUsername(username));
     }
 }

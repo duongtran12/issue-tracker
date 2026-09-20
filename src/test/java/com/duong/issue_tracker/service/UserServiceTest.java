@@ -144,6 +144,7 @@ class UserServiceTest {
 
         assertThat(response.id()).isEqualTo(7L);
         assertThat(response.username()).isEqualTo("duong");
+        assertThat(response.fullName()).isEqualTo("Duong Tran");
         assertThat(response.email()).isEqualTo("duong@example.com");
         assertThat(response.role()).isEqualTo(Role.USER.name());
     }
