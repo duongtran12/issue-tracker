@@ -65,10 +65,10 @@ public class IssueService {
                 String keyword,
                 Pageable pageable) {
             findAccessibleProject(projectId, username);
-            String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+            String normalizedKeyword = keyword == null || keyword.isBlank() ? null : normalizeText(keyword);
             String normalizedAssignee = assigneeUsername == null || assigneeUsername.isBlank()
                 ? null
-                : assigneeUsername.trim();
+                : normalizeText(assigneeUsername);
             return issueRepository.search(
                     projectId,
                     status,
@@ -108,8 +108,8 @@ public class IssueService {
     }
 
     private void apply(Issue issue, IssueRequest request, Long projectId) {
-        issue.setTitle(request.title());
-        issue.setDescription(request.description());
+        issue.setTitle(normalizeText(request.title()));
+        issue.setDescription(normalizeNullableText(request.description()));
         issue.setStatus(request.status() == null ? IssueStatus.TODO : request.status());
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
@@ -144,10 +144,11 @@ public class IssueService {
         if (assigneeUsername == null || assigneeUsername.isBlank()) {
             return null;
         }
-        if (!projectMemberRepository.existsByProjectIdAndUserUsername(projectId, assigneeUsername)) {
-            throw new ResourceNotFoundException("Assignee is not a member of project: " + assigneeUsername);
+        String normalizedUsername = normalizeText(assigneeUsername);
+        if (!projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
+            throw new ResourceNotFoundException("Assignee is not a member of project: " + normalizedUsername);
         }
-        return findUser(assigneeUsername);
+        return findUser(normalizedUsername);
     }
 
     private Project findAccessibleProject(Long projectId, String username) {
@@ -169,6 +170,14 @@ public class IssueService {
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
+    }
+
+    private String normalizeNullableText(String value) {
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private IssueResponse toResponse(Issue issue) {

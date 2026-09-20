@@ -69,6 +69,26 @@ class ProjectServiceTest {
     }
 
     @Test
+    void create_shouldTrimProjectNameAndKeyBeforePersist() {
+        User owner = user("duong");
+        ProjectRequest request = new ProjectRequest("  Issue Tracker  ", "  ISSUE  ", "  Project management  ");
+
+        when(projectRepository.existsByKey("ISSUE")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(owner));
+        when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> {
+            Project project = invocation.getArgument(0);
+            project.setId(1L);
+            return project;
+        });
+
+        ProjectResponse response = projectService.create(request, "duong");
+
+        assertThat(response.name()).isEqualTo("Issue Tracker");
+        assertThat(response.key()).isEqualTo("ISSUE");
+        assertThat(response.description()).isEqualTo("Project management");
+    }
+
+    @Test
     void findById_shouldRejectProjectOwnedByAnotherUser() {
         when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
                 .thenReturn(Optional.empty());
@@ -76,6 +96,25 @@ class ProjectServiceTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> projectService.findById(1L, "duong"));
     }
+
+        @Test
+        void addMember_shouldNormalizeUsernameBeforeLookup() {
+        User owner = user("duong");
+        User member = user("alice");
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong")).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "alice")).thenReturn(false);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(member));
+        when(projectMemberRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = projectService.addMember(1L, "  alice  ", "duong");
+
+        assertThat(response.username()).isEqualTo("alice");
+        verify(userRepository).findByUsername("alice");
+        }
 
     private User user(String username) {
         User user = new User();

@@ -28,15 +28,19 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse create(ProjectRequest request, String ownerUsername) {
-        if (projectRepository.existsByKey(request.key())) {
-            throw new DuplicateResourceException("Project key already exists: " + request.key());
+        String normalizedName = normalizeText(request.name());
+        String normalizedKey = normalizeText(request.key());
+        String normalizedDescription = normalizeText(request.description());
+
+        if (projectRepository.existsByKey(normalizedKey)) {
+            throw new DuplicateResourceException("Project key already exists: " + normalizedKey);
         }
 
         User owner = findUser(ownerUsername);
         Project project = new Project();
-        project.setName(request.name());
-        project.setKey(request.key());
-        project.setDescription(request.description());
+        project.setName(normalizedName);
+        project.setKey(normalizedKey);
+        project.setDescription(normalizedDescription);
         project.setOwner(owner);
         Project savedProject = projectRepository.save(project);
         addMembership(savedProject, owner, ProjectMemberRole.OWNER);
@@ -59,13 +63,17 @@ public class ProjectService {
     @Transactional
     public ProjectResponse update(Long id, ProjectRequest request, String ownerUsername) {
         Project project = findOwnedProject(id, ownerUsername);
-        if (!project.getKey().equals(request.key()) && projectRepository.existsByKey(request.key())) {
-            throw new DuplicateResourceException("Project key already exists: " + request.key());
+        String normalizedName = normalizeText(request.name());
+        String normalizedKey = normalizeText(request.key());
+        String normalizedDescription = normalizeText(request.description());
+
+        if (!project.getKey().equals(normalizedKey) && projectRepository.existsByKey(normalizedKey)) {
+            throw new DuplicateResourceException("Project key already exists: " + normalizedKey);
         }
 
-        project.setName(request.name());
-        project.setKey(request.key());
-        project.setDescription(request.description());
+        project.setName(normalizedName);
+        project.setKey(normalizedKey);
+        project.setDescription(normalizedDescription);
         return toResponse(projectRepository.save(project));
     }
 
@@ -77,11 +85,12 @@ public class ProjectService {
     @Transactional
     public ProjectMemberResponse addMember(Long projectId, String username, String ownerUsername) {
         Project project = findOwnedProject(projectId, ownerUsername);
-        if (projectMemberRepository.existsByProjectIdAndUserUsername(projectId, username)) {
-            throw new DuplicateResourceException("User is already a project member: " + username);
+        String normalizedUsername = normalizeText(username);
+        if (projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
+            throw new DuplicateResourceException("User is already a project member: " + normalizedUsername);
         }
 
-        User user = findUser(username);
+        User user = findUser(normalizedUsername);
         return toMemberResponse(addMembership(project, user, ProjectMemberRole.MEMBER));
     }
 
@@ -97,8 +106,9 @@ public class ProjectService {
     @Transactional
     public void removeMember(Long projectId, String username, String ownerUsername) {
         findOwnedProject(projectId, ownerUsername);
-        ProjectMember member = projectMemberRepository.findByProjectIdAndUserUsername(projectId, username)
-                .orElseThrow(() -> new ResourceNotFoundException("Project member not found: " + username));
+        String normalizedUsername = normalizeText(username);
+        ProjectMember member = projectMemberRepository.findByProjectIdAndUserUsername(projectId, normalizedUsername)
+            .orElseThrow(() -> new ResourceNotFoundException("Project member not found: " + normalizedUsername));
         if (member.getRole() == ProjectMemberRole.OWNER) {
             throw new IllegalArgumentException("Project owner cannot be removed");
         }
@@ -111,8 +121,13 @@ public class ProjectService {
     }
 
     private User findUser(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        String normalizedUsername = normalizeText(username);
+        return userRepository.findByUsername(normalizedUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + normalizedUsername));
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private ProjectMember addMembership(Project project, User user, ProjectMemberRole role) {

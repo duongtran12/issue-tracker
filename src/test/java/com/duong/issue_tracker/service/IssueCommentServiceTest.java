@@ -69,6 +69,22 @@ class IssueCommentServiceTest {
     }
 
     @Test
+    void create_shouldTrimCommentBodyBeforePersisting() {
+        User author = user("duong", 10L);
+        Issue issue = issue(5L, author);
+        CommentRequest request = new CommentRequest("  I will investigate this.  ");
+
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(author));
+        when(commentRepository.save(any(IssueComment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CommentResponse response = commentService.create(1L, 5L, request, "duong");
+
+        assertThat(response.body()).isEqualTo("I will investigate this.");
+    }
+
+    @Test
     void create_shouldRejectUserOutsideProject() {
         User owner = user("owner", 1L);
         Issue issue = issue(5L, owner);

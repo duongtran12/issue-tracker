@@ -72,6 +72,27 @@ class IssueServiceTest {
     }
 
     @Test
+    void create_shouldTrimIssueTitleAndDescription() {
+        User reporter = user("duong", 10L);
+        Project project = project(1L, reporter);
+        IssueRequest request = new IssueRequest("  Fix login  ", "  Handle expired token  ", null, null, null);
+
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> {
+            Issue issue = invocation.getArgument(0);
+            issue.setId(5L);
+            return issue;
+        });
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.title()).isEqualTo("Fix login");
+        assertThat(response.description()).isEqualTo("Handle expired token");
+    }
+
+    @Test
     void create_shouldRejectAssigneeOutsideProject() {
         User reporter = user("duong", 10L);
         Project project = project(1L, reporter);
@@ -87,6 +108,25 @@ class IssueServiceTest {
     }
 
     @Test
+    void create_shouldNormalizeAssigneeUsername() {
+        User reporter = user("duong", 10L);
+        User assignee = user("other", 11L);
+        Project project = project(1L, reporter);
+        IssueRequest request = new IssueRequest("Fix login", null, null, IssuePriority.HIGH, "  other  ");
+
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "other")).thenReturn(true);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(userRepository.findByUsername("other")).thenReturn(Optional.of(assignee));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.assigneeUsername()).isEqualTo("other");
+    }
+
+    @Test
     void findAll_shouldRejectUserOutsideProject() {
         User owner = user("owner", 1L);
         Project project = project(1L, owner);
@@ -99,7 +139,7 @@ class IssueServiceTest {
     }
 
             @Test
-            void search_shouldTrimTextFiltersAndMapPage() {
+            void search_shouldNormalizeTextFiltersAndMapPage() {
             User owner = user("duong", 10L);
             Project project = project(1L, owner);
             Issue issue = new Issue();
@@ -114,7 +154,7 @@ class IssueServiceTest {
                 .thenReturn(new PageImpl<>(java.util.List.of(issue), pageable, 11));
 
             var response = issueService.search(
-                1L, "duong", null, IssuePriority.HIGH, " assignee ", " login ", pageable);
+                1L, "duong", null, IssuePriority.HIGH, "  assignee  ", "  login  ", pageable);
 
             assertThat(response.getTotalElements()).isEqualTo(11);
             assertThat(response.getContent()).hasSize(1);

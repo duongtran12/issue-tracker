@@ -14,6 +14,7 @@ public record RegisterRequest(
         String fullName,
 
         @NotBlank(message = "Email must not be blank")
+        @Size(max = 255, message = "Email must not exceed 255 characters")
         @Email(message = "Email must be valid")
         String email,
 
