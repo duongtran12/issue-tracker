@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, login, logout } from './api'
+import { ApiError, apiFetch, getProfile, login, logout } from './api'
 import type { BackendIssue, IssuePage, Project } from './api'
 import './App.css'
 
@@ -28,6 +28,18 @@ function App() {
   const [error, setError] = useState('')
 
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? projects[0]
+
+  useEffect(() => {
+    if (!token) return
+    getProfile()
+      .then((profile) => setUsername(profile.username))
+      .catch((reason: Error) => {
+        if (reason instanceof ApiError && reason.status === 401) {
+          setToken(null)
+          logout()
+        }
+      })
+  }, [token])
 
   useEffect(() => {
     if (!token) return

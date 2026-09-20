@@ -35,6 +35,14 @@ export type LoginResponse = {
   expiresIn: number
 }
 
+export type UserProfile = {
+  id: number
+  username: string
+  fullName: string
+  email: string
+  role: string
+}
+
 type ApiErrorBody = {
   message?: string
   errors?: Record<string, string>
@@ -76,6 +84,10 @@ export async function login(username: string, password: string) {
   })
   localStorage.setItem('issue_tracker_token', result.accessToken)
   return result
+}
+
+export function getProfile() {
+  return apiFetch<UserProfile>('/auth/me')
 }
 
 export function logout() {
