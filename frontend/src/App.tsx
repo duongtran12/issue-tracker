@@ -56,6 +56,14 @@ function App() {
       })
   }, [token])
 
+    useEffect(() => {
+      if (token) return
+      setProjects([])
+      setIssues([])
+      setActiveProjectId(null)
+      setError('')
+    }, [token])
+
   useEffect(() => {
     if (!token) return
     setLoading(true)
