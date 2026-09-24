@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, createIssue as createIssueRequest, createProject, getProfile, listProjectIssues, login, logout } from './api'
-import type { BackendIssue, IssuePage, Project } from './api'
+import { ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout } from './api'
+import type { BackendIssue, Project } from './api'
 import './App.css'
 
 type IssueStatus = 'Todo' | 'In progress' | 'Done'
@@ -169,7 +169,7 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const created = await createProject({
+      const created = await createProjectRequest({
         name: newProjectName.trim(),
         key: newProjectKey.trim().toUpperCase(),
         description: newProjectDescription.trim() || null,
