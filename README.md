@@ -50,3 +50,21 @@ Tests use the H2 test profile and do not require a running database.
 | `SERVER_PORT` | `8080` | HTTP port |
 
 Never use the development JWT fallback in a deployed environment.
+
+## Frontend
+
+The Vite frontend lives in `frontend/` and expects the backend API at `/api` by default.
+
+```powershell
+Set-Location frontend
+npm install
+npm run dev
+```
+
+To point the frontend at another backend, create `frontend/.env.local`:
+
+```text
+VITE_API_URL=http://localhost:8080/api
+```
+
+The dashboard supports JWT login, project creation, issue creation, status updates, filtering, and manual issue refresh.
