@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, createProject, getProfile, listProjectIssues, login, logout } from './api'
+import { ApiError, apiFetch, createIssue as createIssueRequest, createProject, getProfile, listProjectIssues, login, logout } from './api'
 import type { BackendIssue, IssuePage, Project } from './api'
 import './App.css'
 
@@ -137,15 +137,12 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const created = await apiFetch<BackendIssue>(`/projects/${activeProjectId}/issues`, {
-        method: 'POST',
-        body: JSON.stringify({
-          title: newIssueTitle.trim(),
-          description: newIssueDescription.trim() || null,
-          status: 'TODO',
-          priority: newIssuePriority,
-          assigneeUsername: null,
-        }),
+      const created = await createIssueRequest(activeProjectId, {
+        title: newIssueTitle.trim(),
+        description: newIssueDescription.trim() || null,
+        status: 'TODO',
+        priority: newIssuePriority,
+        assigneeUsername: null,
       })
       setIssues((current) => [created, ...current])
       setNewIssueTitle('')

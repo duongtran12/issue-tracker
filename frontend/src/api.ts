@@ -101,6 +101,13 @@ export function listProjectIssues(projectId: number) {
   return apiFetch<IssuePage>(`/projects/${projectId}/issues?size=100&sort=createdAt,desc`)
 }
 
+export function createIssue(projectId: number, request: Omit<BackendIssue, 'id' | 'projectId' | 'reporterUsername' | 'createdAt' | 'updatedAt'>) {
+  return apiFetch<BackendIssue>(`/projects/${projectId}/issues`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
 export function logout() {
   localStorage.removeItem('issue_tracker_token')
 }
