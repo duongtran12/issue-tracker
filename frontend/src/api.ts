@@ -90,6 +90,13 @@ export function getProfile() {
   return apiFetch<UserProfile>('/auth/me')
 }
 
+export function createProject(request: Pick<Project, 'name' | 'key' | 'description'>) {
+  return apiFetch<Project>('/projects', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}
+
 export function logout() {
   localStorage.removeItem('issue_tracker_token')
 }
