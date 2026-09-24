@@ -97,6 +97,10 @@ export function createProject(request: Pick<Project, 'name' | 'key' | 'descripti
   })
 }
 
+export function listProjectIssues(projectId: number) {
+  return apiFetch<IssuePage>(`/projects/${projectId}/issues?size=100&sort=createdAt,desc`)
+}
+
 export function logout() {
   localStorage.removeItem('issue_tracker_token')
 }

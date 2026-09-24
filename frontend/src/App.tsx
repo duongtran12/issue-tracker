@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, createProject, getProfile, login, logout } from './api'
+import { ApiError, apiFetch, createProject, getProfile, listProjectIssues, login, logout } from './api'
 import type { BackendIssue, IssuePage, Project } from './api'
 import './App.css'
 
@@ -78,7 +78,7 @@ function App() {
   useEffect(() => {
     if (!activeProjectId || !token) return
     setLoading(true)
-    apiFetch<IssuePage>(`/projects/${activeProjectId}/issues?size=100&sort=createdAt,desc`)
+    listProjectIssues(activeProjectId)
       .then((result) => setIssues(result.content))
       .catch((reason: Error) => setError(reason.message))
       .finally(() => setLoading(false))
@@ -123,7 +123,7 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const result = await apiFetch<IssuePage>(`/projects/${activeProjectId}/issues?size=100&sort=createdAt,desc`)
+      const result = await listProjectIssues(activeProjectId)
       setIssues(result.content)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to refresh issues')
