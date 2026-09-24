@@ -55,6 +55,7 @@
 .filter-label { margin-right: 7px; }
 .filter, .toolbar-actions button { border: 0; background: transparent; color: #829187; border-radius: 5px; padding: 7px 10px; font: 600 11px Manrope, sans-serif; cursor: pointer; }
 .filter.active, .filter:hover { background: #e6f4cf; color: #355126; }
+.refresh-button { display: block; margin: 12px 42px 0 auto; }
 .toolbar-actions button { border-left: 1px solid #e2e8df; border-radius: 0; padding-left: 14px; }
 .board { padding: 0 42px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .column { min-width: 0; }
