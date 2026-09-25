@@ -91,11 +91,26 @@ class ProjectServiceTest {
 
     @Test
     void findById_shouldRejectProjectOwnedByAnotherUser() {
-        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
-                .thenReturn(Optional.empty());
+        Project project = new Project();
+        project.setOwner(user("alice"));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class,
                 () -> projectService.findById(1L, "duong"));
+    }
+
+    @Test
+    void findById_shouldAllowProjectMember() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setName("Shared");
+        project.setKey("SHARED");
+        project.setOwner(user("alice"));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(true);
+
+        assertThat(projectService.findById(1L, "duong").id()).isEqualTo(1L);
     }
 
     @Test
