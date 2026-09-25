@@ -10,6 +10,7 @@ import com.duong.issue_tracker.exception.DuplicateResourceException;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.UserRepository;
 import com.duong.issue_tracker.util.JwtUtil;
+import com.duong.issue_tracker.util.TextNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,10 +35,9 @@ public class UserService {
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
-        String normalizedUsername = normalizeText(request.username());
-        String normalizedFullName = normalizeText(request.fullName());
-        String normalizedEmail = normalizeText(request.email());
-        String normalizedPassword = normalizeCredential(request.password());
+        String normalizedUsername = TextNormalizer.username(request.username());
+        String normalizedFullName = TextNormalizer.compact(request.fullName());
+        String normalizedEmail = TextNormalizer.email(request.email());
 
         if (userRepository.existsByUsername(normalizedUsername)) {
             throw new DuplicateResourceException("Username already exists");
@@ -51,7 +51,7 @@ public class UserService {
         user.setUsername(normalizedUsername);
         user.setFullName(normalizedFullName);
         user.setEmail(normalizedEmail);
-        user.setPassword(passwordEncoder.encode(normalizedPassword));
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
 
         User savedUser = userRepository.save(user);
@@ -66,13 +66,12 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request) throws AuthenticationException {
-        String normalizedUsername = normalizeText(request.username());
-        String normalizedPassword = normalizeCredential(request.password());
+        String normalizedUsername = TextNormalizer.username(request.username());
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         normalizedUsername,
-                        normalizedPassword
+                        request.password()
                 )
         );
 
@@ -91,7 +90,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponse getByUsername(String username) {
-        String normalizedUsername = normalizeText(username);
+        String normalizedUsername = TextNormalizer.username(username);
         User user = userRepository.findByUsername(normalizedUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + normalizedUsername));
 
@@ -104,11 +103,4 @@ public class UserService {
         );
     }
 
-    private String normalizeText(String value) {
-        return value == null ? null : value.trim().replaceAll("\\s+", " ");
-    }
-
-    private String normalizeCredential(String value) {
-        return value == null ? null : value.trim();
-    }
 }
