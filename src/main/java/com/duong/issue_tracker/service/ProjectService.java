@@ -49,8 +49,8 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectResponse> findMine(String ownerUsername) {
-        return projectRepository.findAllByOwnerUsernameOrderByCreatedAtDesc(ownerUsername)
+    public List<ProjectResponse> findMine(String username) {
+        return projectRepository.findAllAccessibleByUsername(TextNormalizer.username(username))
                 .stream()
                 .map(this::toResponse)
                 .toList();
