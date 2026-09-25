@@ -95,6 +95,18 @@ export type IssueComment = {
   updatedAt: string
 }
 
+export type IssueHistory = {
+  id: number
+  issueId: number
+  actorId: number | null
+  actorUsername: string | null
+  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED'
+  fieldName: string | null
+  oldValue: string | null
+  newValue: string | null
+  createdAt: string
+}
+
 export type ProjectMember = {
   userId: number
   username: string
@@ -161,6 +173,10 @@ export function createIssueComment(projectId: number, issueId: number, body: str
     method: 'POST',
     body: JSON.stringify({ body }),
   })
+}
+
+export function listIssueHistory(projectId: number, issueId: number) {
+  return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
 }
 
 export function logout() {
