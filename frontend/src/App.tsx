@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AUTH_EXPIRED_EVENT, ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout } from './api'
+import { AUTH_EXPIRED_EVENT, ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout, updateIssue } from './api'
 import type { BackendIssue, Project } from './api'
 import './App.css'
 
@@ -117,9 +117,12 @@ function App() {
   const moveIssue = async (issue: Issue) => {
     const nextStatus: BackendIssue['status'] = issue.status === 'TODO' ? 'IN_PROGRESS' : issue.status === 'IN_PROGRESS' ? 'DONE' : 'TODO'
     try {
-      const updated = await apiFetch<BackendIssue>(`/projects/${issue.projectId}/issues/${issue.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ title: issue.title, description: issue.description, status: nextStatus, priority: issue.priority, assigneeUsername: issue.assigneeUsername }),
+      const updated = await updateIssue(issue.projectId, issue.id, {
+        title: issue.title,
+        description: issue.description,
+        status: nextStatus,
+        priority: issue.priority,
+        assigneeUsername: issue.assigneeUsername,
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to update issue') }
