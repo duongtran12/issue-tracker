@@ -116,6 +116,10 @@ export function createIssue(projectId: number, request: Omit<BackendIssue, 'id' 
   })
 }
 
+export function listProjects() {
+  return apiFetch<Project[]>('/projects')
+}
+
 export function updateIssue(
   projectId: number,
   issueId: number,
