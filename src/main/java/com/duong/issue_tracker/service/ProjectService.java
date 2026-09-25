@@ -57,8 +57,8 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectResponse findById(Long id, String ownerUsername) {
-        return toResponse(findOwnedProject(id, ownerUsername));
+    public ProjectResponse findById(Long id, String username) {
+        return toResponse(findAccessibleProject(id, username));
     }
 
     @Transactional
@@ -96,8 +96,8 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectMemberResponse> findMembers(Long projectId, String ownerUsername) {
-        findOwnedProject(projectId, ownerUsername);
+    public List<ProjectMemberResponse> findMembers(Long projectId, String username) {
+        findAccessibleProject(projectId, username);
         return projectMemberRepository.findAllByProjectIdOrderByIdAsc(projectId)
                 .stream()
                 .map(this::toMemberResponse)
@@ -119,6 +119,18 @@ public class ProjectService {
     private Project findOwnedProject(Long id, String ownerUsername) {
         return projectRepository.findByIdAndOwnerUsername(id, ownerUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + id));
+    }
+
+    private Project findAccessibleProject(Long id, String username) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + id));
+        String normalizedUsername = TextNormalizer.username(username);
+        boolean owner = project.getOwner().getUsername().equals(normalizedUsername);
+        boolean member = projectMemberRepository.existsByProjectIdAndUserUsername(id, normalizedUsername);
+        if (!owner && !member) {
+            throw new ResourceNotFoundException("Project not found: " + id);
+        }
+        return project;
     }
 
     private User findUser(String username) {
