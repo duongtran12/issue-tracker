@@ -12,6 +12,7 @@ import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.ProjectRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.UserRepository;
+import com.duong.issue_tracker.util.TextNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,9 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse create(ProjectRequest request, String ownerUsername) {
-        String normalizedName = normalizeText(request.name());
-        String normalizedKey = normalizeText(request.key());
-        String normalizedDescription = normalizeText(request.description());
+        String normalizedName = TextNormalizer.compact(request.name());
+        String normalizedKey = TextNormalizer.projectKey(request.key());
+        String normalizedDescription = TextNormalizer.optional(request.description());
 
         if (projectRepository.existsByKey(normalizedKey)) {
             throw new DuplicateResourceException("Project key already exists: " + normalizedKey);
@@ -63,9 +64,9 @@ public class ProjectService {
     @Transactional
     public ProjectResponse update(Long id, ProjectRequest request, String ownerUsername) {
         Project project = findOwnedProject(id, ownerUsername);
-        String normalizedName = normalizeText(request.name());
-        String normalizedKey = normalizeText(request.key());
-        String normalizedDescription = normalizeText(request.description());
+        String normalizedName = TextNormalizer.compact(request.name());
+        String normalizedKey = TextNormalizer.projectKey(request.key());
+        String normalizedDescription = TextNormalizer.optional(request.description());
 
         if (!project.getKey().equals(normalizedKey) && projectRepository.existsByKey(normalizedKey)) {
             throw new DuplicateResourceException("Project key already exists: " + normalizedKey);
@@ -85,7 +86,7 @@ public class ProjectService {
     @Transactional
     public ProjectMemberResponse addMember(Long projectId, String username, String ownerUsername) {
         Project project = findOwnedProject(projectId, ownerUsername);
-        String normalizedUsername = normalizeText(username);
+        String normalizedUsername = TextNormalizer.username(username);
         if (projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
             throw new DuplicateResourceException("User is already a project member: " + normalizedUsername);
         }
@@ -106,7 +107,7 @@ public class ProjectService {
     @Transactional
     public void removeMember(Long projectId, String username, String ownerUsername) {
         findOwnedProject(projectId, ownerUsername);
-        String normalizedUsername = normalizeText(username);
+        String normalizedUsername = TextNormalizer.username(username);
         ProjectMember member = projectMemberRepository.findByProjectIdAndUserUsername(projectId, normalizedUsername)
             .orElseThrow(() -> new ResourceNotFoundException("Project member not found: " + normalizedUsername));
         if (member.getRole() == ProjectMemberRole.OWNER) {
@@ -121,13 +122,9 @@ public class ProjectService {
     }
 
     private User findUser(String username) {
-        String normalizedUsername = normalizeText(username);
+        String normalizedUsername = TextNormalizer.username(username);
         return userRepository.findByUsername(normalizedUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + normalizedUsername));
-    }
-
-    private String normalizeText(String value) {
-        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private ProjectMember addMembership(Project project, User user, ProjectMemberRole role) {
