@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,6 +96,22 @@ class ProjectServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> projectService.findById(1L, "duong"));
+    }
+
+    @Test
+    void findMine_shouldReturnProjectsSharedWithMember() {
+        User owner = user("alice");
+        Project sharedProject = new Project();
+        sharedProject.setId(3L);
+        sharedProject.setName("Shared project");
+        sharedProject.setKey("SHARED");
+        sharedProject.setOwner(owner);
+        when(projectRepository.findAllAccessibleByUsername("duong"))
+                .thenReturn(List.of(sharedProject));
+
+        List<ProjectResponse> response = projectService.findMine(" Duong ");
+
+        assertThat(response).extracting(ProjectResponse::id).containsExactly(3L);
     }
 
         @Test
