@@ -85,6 +85,13 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   return (text ? JSON.parse(text) : undefined) as T
 }
 
+export type ProjectMember = {
+  userId: number
+  username: string
+  fullName: string
+  role: 'OWNER' | 'MEMBER'
+}
+
 export async function login(username: string, password: string) {
   const result = await apiFetch<LoginResponse>('/auth/login', {
     method: 'POST',
@@ -118,6 +125,10 @@ export function createIssue(projectId: number, request: Omit<BackendIssue, 'id' 
 
 export function listProjects() {
   return apiFetch<Project[]>('/projects')
+}
+
+export function listProjectMembers(projectId: number) {
+  return apiFetch<ProjectMember[]>(`/projects/${projectId}/members`)
 }
 
 export function updateIssue(
