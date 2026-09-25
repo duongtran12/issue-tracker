@@ -181,4 +181,5 @@ export function listIssueHistory(projectId: number, issueId: number) {
 
 export function logout() {
   localStorage.removeItem('issue_tracker_token')
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
 }

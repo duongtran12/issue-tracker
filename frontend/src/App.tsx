@@ -38,7 +38,13 @@ function App() {
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? projects[0]
 
   useEffect(() => {
-    const clearExpiredSession = () => setToken(null)
+    const clearExpiredSession = () => {
+      setToken(null)
+      setProjects([])
+      setIssues([])
+      setActiveProjectId(null)
+      setError('')
+    }
     window.addEventListener(AUTH_EXPIRED_EVENT, clearExpiredSession)
     return () => window.removeEventListener(AUTH_EXPIRED_EVENT, clearExpiredSession)
   }, [])
@@ -55,40 +61,43 @@ function App() {
       })
   }, [token])
 
-    useEffect(() => {
-      if (token) return
-      setProjects([])
-      setIssues([])
-      setActiveProjectId(null)
-      setError('')
-    }, [token])
-
   useEffect(() => {
     if (!token) return
-    setLoading(true)
-    setError('')
-    listProjects()
-      .then((result) => {
+    const loadProjects = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const result = await listProjects()
         setProjects(result)
         setActiveProjectId((current) => current ?? result[0]?.id ?? null)
-      })
-      .catch((reason: Error) => {
+      } catch (reason) {
+        if (!(reason instanceof Error)) return
         setError(reason.message)
         if (reason instanceof ApiError && reason.status === 401) {
           setToken(null)
           logout()
         }
-      })
-      .finally(() => setLoading(false))
+      } finally {
+        setLoading(false)
+      }
+    }
+    void loadProjects()
   }, [token])
 
   useEffect(() => {
     if (!activeProjectId || !token) return
-    setLoading(true)
-    listProjectIssues(activeProjectId)
-      .then((result) => setIssues(result.content))
-      .catch((reason: Error) => setError(reason.message))
-      .finally(() => setLoading(false))
+    const loadIssues = async () => {
+      setLoading(true)
+      try {
+        const result = await listProjectIssues(activeProjectId)
+        setIssues(result.content)
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : 'Unable to load issues')
+      } finally {
+        setLoading(false)
+      }
+    }
+    void loadIssues()
   }, [activeProjectId, token])
 
   const visibleIssues = useMemo<Issue[]>(() => issues.map((issue) => ({
