@@ -11,6 +11,7 @@ import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.ProjectRepository;
 import com.duong.issue_tracker.repository.UserRepository;
+import com.duong.issue_tracker.util.TextNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class IssueCommentService {
         IssueComment comment = new IssueComment();
         comment.setIssue(issue);
         comment.setAuthor(author);
-        comment.setBody(normalizeBody(request.body()));
+        comment.setBody(TextNormalizer.multiline(request.body()));
         return toResponse(commentRepository.save(comment));
     }
 
@@ -55,7 +56,7 @@ public class IssueCommentService {
                 .filter(item -> item.getIssue().getId().equals(issueId))
                 .filter(item -> item.getAuthor().getUsername().equals(username))
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
-        comment.setBody(normalizeBody(request.body()));
+        comment.setBody(TextNormalizer.multiline(request.body()));
         return toResponse(commentRepository.save(comment));
     }
 
@@ -83,10 +84,6 @@ public class IssueCommentService {
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
-    }
-
-    private String normalizeBody(String body) {
-        return body == null ? null : body.trim().replaceAll("\\s+", " ");
     }
 
     private CommentResponse toResponse(IssueComment comment) {
