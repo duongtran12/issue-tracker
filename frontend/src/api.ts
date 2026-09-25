@@ -116,6 +116,17 @@ export function createIssue(projectId: number, request: Omit<BackendIssue, 'id' 
   })
 }
 
+export function updateIssue(
+  projectId: number,
+  issueId: number,
+  request: Omit<BackendIssue, 'id' | 'projectId' | 'reporterUsername' | 'createdAt' | 'updatedAt'>,
+) {
+  return apiFetch<BackendIssue>(`/projects/${projectId}/issues/${issueId}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  })
+}
+
 export function logout() {
   localStorage.removeItem('issue_tracker_token')
 }
