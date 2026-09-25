@@ -1,5 +1,6 @@
 package com.duong.issue_tracker.exception;
 
+import com.duong.issue_tracker.dto.response.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -10,97 +11,73 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(
+    public ResponseEntity<ApiErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
-        Map<String, String> errors = new HashMap<>();
+        Map<String, String> errors = new LinkedHashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String field = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
-            String message = error.getDefaultMessage();
-            errors.put(field, message);
+            errors.putIfAbsent(field, error.getDefaultMessage());
         });
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        body.put("message", "Validation failed");
-        body.put("path", request.getRequestURI());
-        body.put("errors", errors);
-
-        return ResponseEntity.badRequest().body(body);
+        return response(HttpStatus.BAD_REQUEST, "Validation failed", request, errors);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolation(
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex,
             HttpServletRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.badRequest().body(body);
+        return response(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<Map<String, Object>> handleDuplicateResource(
+    public ResponseEntity<ApiErrorResponse> handleDuplicateResource(
             DuplicateResourceException ex,
             HttpServletRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.CONFLICT.value());
-        body.put("error", HttpStatus.CONFLICT.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        return response(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFound(
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex,
             HttpServletRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", HttpStatus.NOT_FOUND.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+        return response(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgument(
             IllegalArgumentException ex,
             HttpServletRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.badRequest().body(body);
+        return response(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-        @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Map<String, Object>> handleAuthenticationException(
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(
             AuthenticationException ex,
             HttpServletRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now());
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        body.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+        return response(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    private ResponseEntity<ApiErrorResponse> response(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request) {
+        return ResponseEntity.status(status).body(ApiErrorResponse.of(
+                status.value(), status.getReasonPhrase(), message, request.getRequestURI()));
+    }
+
+    private ResponseEntity<ApiErrorResponse> response(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request,
+            Map<String, String> errors) {
+        return ResponseEntity.status(status).body(ApiErrorResponse.validation(
+                status.value(), status.getReasonPhrase(), message, request.getRequestURI(), errors));
     }
 }
