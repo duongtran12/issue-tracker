@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
+export const AUTH_EXPIRED_EVENT = 'issue-tracker:auth-expired'
 
 export type Project = {
   id: number
@@ -68,6 +69,10 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 
   const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
   if (!response.ok) {
+    if (response.status === 401 && token) {
+      localStorage.removeItem('issue_tracker_token')
+      window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
+    }
     const body = await response.json().catch(() => null) as ApiErrorBody | null
     const fieldErrors = body?.errors
       ? Object.entries(body.errors).map(([field, message]) => `${field}: ${message}`).join('; ')
