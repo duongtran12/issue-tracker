@@ -1,6 +1,7 @@
 package com.duong.issue_tracker.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record ProjectRequest(
@@ -10,6 +11,7 @@ public record ProjectRequest(
 
         @NotBlank(message = "Project key is required")
         @Size(min = 2, max = 20, message = "Project key must be between 2 and 20 characters")
+        @Pattern(regexp = "[A-Za-z][A-Za-z0-9_-]*", message = "Project key must start with a letter and use only letters, numbers, underscores, or hyphens")
         String key,
 
         @Size(max = 1000, message = "Description must not exceed 1000 characters")
