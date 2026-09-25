@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AUTH_EXPIRED_EVENT, ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout, updateIssue } from './api'
+import { AUTH_EXPIRED_EVENT, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, listProjects, login, logout, updateIssue } from './api'
 import type { BackendIssue, Project } from './api'
 import './App.css'
 
@@ -67,7 +67,7 @@ function App() {
     if (!token) return
     setLoading(true)
     setError('')
-    apiFetch<Project[]>('/projects')
+    listProjects()
       .then((result) => {
         setProjects(result)
         setActiveProjectId((current) => current ?? result[0]?.id ?? null)
