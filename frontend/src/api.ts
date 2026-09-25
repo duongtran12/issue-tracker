@@ -76,7 +76,8 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     throw new ApiError(fieldErrors ? `${message}: ${fieldErrors}` : message, response.status)
   }
   if (response.status === 204) return undefined as T
-  return response.json() as Promise<T>
+  const text = await response.text()
+  return (text ? JSON.parse(text) : undefined) as T
 }
 
 export async function login(username: string, password: string) {
