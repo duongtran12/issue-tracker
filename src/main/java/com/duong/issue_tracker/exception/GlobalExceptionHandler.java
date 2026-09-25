@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -79,6 +80,13 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         String message = "Invalid value for parameter '" + ex.getName() + "'";
         return response(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "The request conflicts with existing data", request);
     }
 
     private ResponseEntity<ApiErrorResponse> response(
