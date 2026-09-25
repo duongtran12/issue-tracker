@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout } from './api'
+import { AUTH_EXPIRED_EVENT, ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout } from './api'
 import type { BackendIssue, Project } from './api'
 import './App.css'
 
@@ -36,6 +36,12 @@ function App() {
   const [newProjectDescription, setNewProjectDescription] = useState('')
 
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? projects[0]
+
+  useEffect(() => {
+    const clearExpiredSession = () => setToken(null)
+    window.addEventListener(AUTH_EXPIRED_EVENT, clearExpiredSession)
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, clearExpiredSession)
+  }, [])
 
   useEffect(() => {
     if (!token) return
