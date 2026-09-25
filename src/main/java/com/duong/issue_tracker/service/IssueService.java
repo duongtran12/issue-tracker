@@ -13,6 +13,7 @@ import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.ProjectRepository;
 import com.duong.issue_tracker.repository.UserRepository;
+import com.duong.issue_tracker.util.TextNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,8 +56,8 @@ public class IssueService {
                 .toList();
     }
 
-            @Transactional(readOnly = true)
-            public Page<IssueResponse> search(
+    @Transactional(readOnly = true)
+    public Page<IssueResponse> search(
                 Long projectId,
                 String username,
                 IssueStatus status,
@@ -64,20 +65,20 @@ public class IssueService {
                 String assigneeUsername,
                 String keyword,
                 Pageable pageable) {
-            findAccessibleProject(projectId, username);
-            String normalizedKeyword = keyword == null || keyword.isBlank() ? null : normalizeText(keyword);
-            String normalizedAssignee = assigneeUsername == null || assigneeUsername.isBlank()
+        findAccessibleProject(projectId, username);
+        String normalizedKeyword = TextNormalizer.optional(keyword);
+        String normalizedAssignee = assigneeUsername == null || assigneeUsername.isBlank()
                 ? null
-                : normalizeText(assigneeUsername);
-            return issueRepository.search(
-                    projectId,
-                    status,
-                    priority,
-                    normalizedAssignee,
-                    normalizedKeyword,
-                    pageable)
+                : TextNormalizer.username(assigneeUsername);
+        return issueRepository.search(
+                projectId,
+                status,
+                priority,
+                normalizedAssignee,
+                normalizedKeyword,
+                pageable)
                 .map(this::toResponse);
-            }
+    }
 
     @Transactional(readOnly = true)
     public IssueResponse findById(Long projectId, Long issueId, String username) {
@@ -108,8 +109,8 @@ public class IssueService {
     }
 
     private void apply(Issue issue, IssueRequest request, Long projectId) {
-        issue.setTitle(normalizeText(request.title()));
-        issue.setDescription(normalizeNullableText(request.description()));
+        issue.setTitle(TextNormalizer.compact(request.title()));
+        issue.setDescription(TextNormalizer.optional(request.description()));
         issue.setStatus(request.status() == null ? IssueStatus.TODO : request.status());
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
@@ -144,7 +145,7 @@ public class IssueService {
         if (assigneeUsername == null || assigneeUsername.isBlank()) {
             return null;
         }
-        String normalizedUsername = normalizeText(assigneeUsername);
+        String normalizedUsername = TextNormalizer.username(assigneeUsername);
         if (!projectMemberRepository.existsByProjectIdAndUserUsername(projectId, normalizedUsername)) {
             throw new ResourceNotFoundException("Assignee is not a member of project: " + normalizedUsername);
         }
@@ -170,14 +171,6 @@ public class IssueService {
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
-    }
-
-    private String normalizeText(String value) {
-        return value == null ? null : value.trim().replaceAll("\\s+", " ");
-    }
-
-    private String normalizeNullableText(String value) {
-        return value == null ? null : value.trim().replaceAll("\\s+", " ");
     }
 
     private IssueResponse toResponse(Issue issue) {
