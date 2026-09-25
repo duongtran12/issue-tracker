@@ -22,4 +22,9 @@ class TextNormalizerTest {
         assertThat(TextNormalizer.email(" Alice@Example.COM ")).isEqualTo("alice@example.com");
         assertThat(TextNormalizer.projectKey(" web ")).isEqualTo("WEB");
     }
+
+    @Test
+    void preservesIntentionalLineBreaks() {
+        assertThat(TextNormalizer.multiline("  first\r\nsecond  ")).isEqualTo("first\nsecond");
+    }
 }

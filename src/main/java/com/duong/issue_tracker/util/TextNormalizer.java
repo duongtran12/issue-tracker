@@ -16,6 +16,14 @@ public final class TextNormalizer {
         return normalized == null || normalized.isEmpty() ? null : normalized;
     }
 
+    public static String multiline(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.replace("\r\n", "\n").replace('\r', '\n').trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
     public static String username(String value) {
         String normalized = compact(value);
         return normalized == null ? null : normalized.toLowerCase(Locale.ROOT);
