@@ -15,6 +15,8 @@ public record IssueRequest(
 
         IssueStatus status,
         IssuePriority priority,
+
+        @Size(max = 50, message = "Assignee username must not exceed 50 characters")
         String assigneeUsername
 ) {
 }
