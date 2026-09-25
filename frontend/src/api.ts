@@ -85,6 +85,16 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   return (text ? JSON.parse(text) : undefined) as T
 }
 
+export type IssueComment = {
+  id: number
+  issueId: number
+  authorId: number
+  authorUsername: string
+  body: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type ProjectMember = {
   userId: number
   username: string
@@ -139,6 +149,17 @@ export function updateIssue(
   return apiFetch<BackendIssue>(`/projects/${projectId}/issues/${issueId}`, {
     method: 'PUT',
     body: JSON.stringify(request),
+  })
+}
+
+export function listIssueComments(projectId: number, issueId: number) {
+  return apiFetch<IssueComment[]>(`/projects/${projectId}/issues/${issueId}/comments`)
+}
+
+export function createIssueComment(projectId: number, issueId: number, body: string) {
+  return apiFetch<IssueComment>(`/projects/${projectId}/issues/${issueId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
   })
 }
 
