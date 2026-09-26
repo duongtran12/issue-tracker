@@ -17,8 +17,8 @@ function initials(username: string | null) {
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('issue_tracker_token'))
-  const [username, setUsername] = useState('duong')
-  const [password, setPassword] = useState('Password123!')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null)
   const [issues, setIssues] = useState<BackendIssue[]>([])
