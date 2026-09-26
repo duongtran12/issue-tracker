@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,11 +91,42 @@ class ProjectServiceTest {
 
     @Test
     void findById_shouldRejectProjectOwnedByAnotherUser() {
-        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
-                .thenReturn(Optional.empty());
+        Project project = new Project();
+        project.setOwner(user("alice"));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class,
                 () -> projectService.findById(1L, "duong"));
+    }
+
+    @Test
+    void findById_shouldAllowProjectMember() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setName("Shared");
+        project.setKey("SHARED");
+        project.setOwner(user("alice"));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(true);
+
+        assertThat(projectService.findById(1L, "duong").id()).isEqualTo(1L);
+    }
+
+    @Test
+    void findMine_shouldReturnProjectsSharedWithMember() {
+        User owner = user("alice");
+        Project sharedProject = new Project();
+        sharedProject.setId(3L);
+        sharedProject.setName("Shared project");
+        sharedProject.setKey("SHARED");
+        sharedProject.setOwner(owner);
+        when(projectRepository.findAllAccessibleByUsername("duong"))
+                .thenReturn(List.of(sharedProject));
+
+        List<ProjectResponse> response = projectService.findMine(" Duong ");
+
+        assertThat(response).extracting(ProjectResponse::id).containsExactly(3L);
     }
 
         @Test

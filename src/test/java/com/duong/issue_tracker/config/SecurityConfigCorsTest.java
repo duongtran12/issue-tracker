@@ -11,6 +11,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +36,8 @@ class SecurityConfigCorsTest {
             jwtAuthenticationFilter,
             userDetailsService,
             restAuthenticationEntryPoint,
-            restAccessDeniedHandler);
+            restAccessDeniedHandler,
+            new CorsProperties(List.of("http://localhost:3000", "http://127.0.0.1:3000")));
 
         MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/auth/login");
         request.addHeader("Origin", "http://localhost:3000");

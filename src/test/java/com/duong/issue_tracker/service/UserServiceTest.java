@@ -74,7 +74,7 @@ class UserServiceTest {
     }
 
     @Test
-    void register_shouldTrimWhitespaceFromUserInput() {
+    void register_shouldNormalizeProfileFieldsWithoutChangingPassword() {
         RegisterRequest request = new RegisterRequest(
                 "  duong  ",
                 "  Duong   Tran   ",
@@ -84,7 +84,7 @@ class UserServiceTest {
 
         when(userRepository.existsByUsername("duong")).thenReturn(false);
         when(userRepository.existsByEmail("duong@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("Password123!")).thenReturn("encoded-password");
+        when(passwordEncoder.encode(" Password123! ")).thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId(1L);
@@ -112,7 +112,7 @@ class UserServiceTest {
         org.mockito.ArgumentCaptor<UsernamePasswordAuthenticationToken> captor =
                 org.mockito.ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
         verify(authenticationManager).authenticate(captor.capture());
-        assertThat(captor.getValue().getCredentials()).isEqualTo("pass  word");
+        assertThat(captor.getValue().getCredentials()).isEqualTo(" pass  word ");
     }
 
     @Test

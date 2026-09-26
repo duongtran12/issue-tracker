@@ -6,8 +6,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GlobalExceptionHandlerTest {
@@ -22,7 +20,9 @@ class GlobalExceptionHandlerTest {
         var response = handler.handleAuthenticationException(exception, request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody()).containsEntry("status", 401);
-        assertThat(response.getBody()).containsEntry("message", "Authentication failed");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().status()).isEqualTo(401);
+        assertThat(response.getBody().message()).isEqualTo("Authentication failed");
+        assertThat(response.getBody().path()).isEqualTo("/api/auth/login");
     }
 }

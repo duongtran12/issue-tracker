@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, login, logout } from './api'
+import { AUTH_EXPIRED_EVENT, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, listProjects, login, logout, updateIssue } from './api'
 import type { BackendIssue, Project } from './api'
 import './App.css'
 
@@ -38,12 +38,17 @@ function App() {
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? projects[0]
 
   useEffect(() => {
-    const createButton = document.querySelector<HTMLButtonElement>('.top-actions .create-button')
-    if (!createButton) return
-    const openDialog = () => setIsCreateIssueOpen(true)
-    createButton.addEventListener('click', openDialog)
-    return () => createButton.removeEventListener('click', openDialog)
-  }, [activeProjectId])
+    const clearExpiredSession = () => {
+      setToken(null)
+      setProjects([])
+      setIssues([])
+      setActiveProjectId(null)
+      setError('')
+    }
+    window.addEventListener(AUTH_EXPIRED_EVENT, clearExpiredSession)
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, clearExpiredSession)
+  }, [])
+
   useEffect(() => {
     if (!token) return
     getProfile()
@@ -56,40 +61,43 @@ function App() {
       })
   }, [token])
 
-    useEffect(() => {
-      if (token) return
-      setProjects([])
-      setIssues([])
-      setActiveProjectId(null)
-      setError('')
-    }, [token])
-
   useEffect(() => {
     if (!token) return
-    setLoading(true)
-    setError('')
-    apiFetch<Project[]>('/projects')
-      .then((result) => {
+    const loadProjects = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const result = await listProjects()
         setProjects(result)
         setActiveProjectId((current) => current ?? result[0]?.id ?? null)
-      })
-      .catch((reason: Error) => {
+      } catch (reason) {
+        if (!(reason instanceof Error)) return
         setError(reason.message)
         if (reason instanceof ApiError && reason.status === 401) {
           setToken(null)
           logout()
         }
-      })
-      .finally(() => setLoading(false))
+      } finally {
+        setLoading(false)
+      }
+    }
+    void loadProjects()
   }, [token])
 
   useEffect(() => {
     if (!activeProjectId || !token) return
-    setLoading(true)
-    listProjectIssues(activeProjectId)
-      .then((result) => setIssues(result.content))
-      .catch((reason: Error) => setError(reason.message))
-      .finally(() => setLoading(false))
+    const loadIssues = async () => {
+      setLoading(true)
+      try {
+        const result = await listProjectIssues(activeProjectId)
+        setIssues(result.content)
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : 'Unable to load issues')
+      } finally {
+        setLoading(false)
+      }
+    }
+    void loadIssues()
   }, [activeProjectId, token])
 
   const visibleIssues = useMemo<Issue[]>(() => issues.map((issue) => ({
@@ -118,9 +126,12 @@ function App() {
   const moveIssue = async (issue: Issue) => {
     const nextStatus: BackendIssue['status'] = issue.status === 'TODO' ? 'IN_PROGRESS' : issue.status === 'IN_PROGRESS' ? 'DONE' : 'TODO'
     try {
-      const updated = await apiFetch<BackendIssue>(`/projects/${issue.projectId}/issues/${issue.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ title: issue.title, description: issue.description, status: nextStatus, priority: issue.priority, assigneeUsername: issue.assigneeUsername }),
+      const updated = await updateIssue(issue.projectId, issue.id, {
+        title: issue.title,
+        description: issue.description,
+        status: nextStatus,
+        priority: issue.priority,
+        assigneeUsername: issue.assigneeUsername,
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to update issue') }
@@ -189,7 +200,8 @@ function App() {
 
   return <main className="app-shell">
     <aside className="sidebar"><div className="brand"><span className="brand-mark">IT</span><span>issue tracker</span></div><div className="workspace-label">Workspace</div><button className="workspace-switcher" type="button"><span className="workspace-dot" /> Acme Studio <span className="chevron">⌄</span></button><nav className="main-nav"><button className="nav-item active" type="button"><span>▦</span> Overview</button><button className="nav-item" type="button"><span>◈</span> My issues</button><button className="nav-item" type="button"><span>◷</span> Activity</button></nav><div className="projects-heading"><span>Projects</span><button type="button" aria-label="Create project" onClick={() => setIsCreateProjectOpen(true)}>＋</button></div><div className="project-list">{projects.map((project) => <button key={project.id} type="button" className={`project-item ${activeProject?.id === project.id ? 'selected' : ''}`} onClick={() => setActiveProjectId(project.id)}><span className="project-icon">{activeProject?.id === project.id ? '●' : '○'}</span>{project.name}</button>)}</div><div className="sidebar-bottom"><button className="nav-item" type="button" onClick={() => { logout(); setToken(null) }}><span>↪</span> Sign out</button><div className="user-chip"><span className="avatar">{initials(username)}</span><span><strong>{username}</strong><small>Authenticated</small></span></div></div></aside>
-    <section className="content"><header className="topbar"><div className="breadcrumbs"><span>Projects</span><b>/</b><strong>{activeProject?.name ?? 'Loading...'}</strong></div><div className="top-actions"><label className="search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search issues" /><kbd>⌘ K</kbd></label><button className="create-button" type="button"><span>+</span> Create issue</button></div></header><div className="page-heading"><div><div className="eyebrow">PROJECT / {activeProject?.key ?? '...'}</div><h1>{activeProject?.name ?? 'Your projects'}</h1><p>{activeProject?.description ?? 'Ship with clarity. Keep every moving part visible.'}</p></div><div className="heading-meta"><span className="updated">{loading ? 'Syncing...' : `${issues.length} issues loaded`}</span></div></div>{error && <div className="api-error">{error}</div>}<div className="toolbar"><div className="filters"><span className="filter-label">View</span>{(['All', 'Todo', 'In progress', 'Done'] as const).map((filter) => <button key={filter} type="button" className={`filter ${statusFilter === filter ? 'active' : ''}`} onClick={() => setStatusFilter(filter)}>{filter}</button>)}</div><div className="toolbar-actions"><span>Live API data</span></div></div><div className="board">{(['Todo', 'In progress', 'Done'] as IssueStatus[]).map((status) => <section className="column" key={status}><div className="column-heading"><div><span className={`status-dot ${status.toLowerCase().replace(' ', '-')}`} /><h2>{status}</h2><span className="issue-count">{visibleIssues.filter((issue) => issue.displayStatus === status).length}</span></div></div><div className="issue-list">{visibleIssues.filter((issue) => issue.displayStatus === status).map((issue) => <article className="issue-card" key={issue.id}><div className="issue-card-top"><span className="issue-id">ISSUE-{issue.id}</span><button type="button" aria-label={`Move issue ${issue.id}`} onClick={() => moveIssue(issue)}>•••</button></div><h3>{issue.title}</h3><div className="card-footer"><span className={`priority ${issue.displayPriority.toLowerCase()}`}><i /> {issue.displayPriority}</span><span className="label">{issue.assigneeUsername ?? 'Unassigned'}</span><span className="avatar small">{issue.assigneeInitials}</span></div></article>)}{visibleIssues.filter((issue) => issue.displayStatus === status).length === 0 && <div className="empty-column">Nothing here yet</div>}</div></section>)}</div><footer className="board-footer"><span><b>{visibleIssues.length}</b> issues in view</span><span className="legend"><i className="priority high-dot" /> High priority <i className="priority medium-dot" /> Medium <i className="priority low-dot" /> Low</span></footer></section>
+    <section className="content"><header className="topbar"><div className="breadcrumbs"><span>Projects</span><b>/</b><strong>{activeProject?.name ?? 'Loading...'}</strong></div><div className="top-actions"><label className="search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search issues" /><kbd>⌘ K</kbd></label><button className="create-button" type="button" onClick={() => setIsCreateIssueOpen(true)} disabled={!activeProject}><span>+</span> Create issue</button></div></header><div className="page-heading"><div><div className="eyebrow">PROJECT / {activeProject?.key ?? '...'}</div><h1>{activeProject?.name ?? 'Your projects'}</h1><p>{activeProject?.description ?? 'Ship with clarity. Keep every moving part visible.'}</p></div><div className="heading-meta"><span className="updated">{loading ? 'Syncing...' : `${issues.length} issues loaded`}</span></div></div>{error && <div className="api-error">{error}</div>}<div className="toolbar"><div className="filters"><span className="filter-label">View</span>{(['All', 'Todo', 'In progress', 'Done'] as const).map((filter) => <button key={filter} type="button" className={`filter ${statusFilter === filter ? 'active' : ''}`} onClick={() => setStatusFilter(filter)}>{filter}</button>)}</div><div className="toolbar-actions"><span>Live API data</span></div></div><div className="board">{(['Todo', 'In progress', 'Done'] as IssueStatus[]).map((status) => <section className="column" key={status}><div className="column-heading"><div><span className={`status-dot ${status.toLowerCase().replace(' ', '-')}`} /><h2>{status}</h2><span className="issue-count">{visibleIssues.filter((issue) => issue.displayStatus === status).length}</span></div></div><div className="issue-list">{visibleIssues.filter((issue) => issue.displayStatus === status).map((issue) => <article className="issue-card" key={issue.id}><div className="issue-card-top"><span className="issue-id">ISSUE-{issue.id}</span><button type="button" aria-label={`Move issue ${issue.id}`} onClick={() => moveIssue(issue)}>•••</button></div><h3>{issue.title}</h3><div className="card-footer"><span className={`priority ${issue.displayPriority.toLowerCase()}`}><i /> {issue.displayPriority}</span><span className="label">{issue.assigneeUsername ?? 'Unassigned'}</span><span className="avatar small">{issue.assigneeInitials}</span></div></article>)}{visibleIssues.filter((issue) => issue.displayStatus === status).length === 0 && <div className="empty-column">Nothing here yet</div>}</div></section>)}</div><footer className="board-footer"><span><b>{visibleIssues.length}</b> issues in view</span><span className="legend"><i className="priority high-dot" /> High priority <i className="priority medium-dot" /> Medium <i className="priority low-dot" /> Low</span></footer></section>
+    {!loading && projects.length === 0 && <div className="empty-hint">No projects yet. Use the plus button beside Projects to create your first workspace.</div>}
     {activeProjectId && !loading && issues.length === 0 && <div className="empty-hint">No issues in this project yet. Create the first one from the button above.</div>}
     <button className="filter refresh-button" type="button" onClick={refreshIssues} disabled={loading}>{loading ? 'Refreshing...' : 'Refresh issues'}</button>
     {isCreateProjectOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsCreateProjectOpen(false) }}><form className="issue-form project-form" onSubmit={createProject}><div className="issue-form-heading"><div><div className="eyebrow">NEW PROJECT</div><h2>Create a project</h2></div><button type="button" className="icon-button" aria-label="Close create project dialog" onClick={() => setIsCreateProjectOpen(false)}>X</button></div><label>Name<input value={newProjectName} onChange={(event) => setNewProjectName(event.target.value)} placeholder="Project name" required maxLength={100} autoFocus /></label><label>Key<input value={newProjectKey} onChange={(event) => setNewProjectKey(event.target.value.replace(/\s/g, '').toUpperCase())} placeholder="e.g. CRM" required maxLength={20} pattern="[A-Z0-9_-]+" /></label><label>Description<textarea value={newProjectDescription} onChange={(event) => setNewProjectDescription(event.target.value)} placeholder="What is this project about?" maxLength={1000} rows={4} /></label><div className="issue-form-actions"><button type="button" className="filter" onClick={() => setIsCreateProjectOpen(false)}>Cancel</button><button className="create-button" type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create project'}</button></div></form></div>}
