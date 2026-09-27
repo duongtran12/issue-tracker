@@ -95,6 +95,9 @@
 .login-card label { display: grid; gap: 6px; color: #526258; font: 700 11px Manrope, sans-serif; }
 .login-card input { width: 100%; border: 1px solid #dce5d9; border-radius: 5px; outline: 0; padding: 11px 12px; background: #fff; font-size: 13px; }.login-card input:focus { border-color: #8fba55; box-shadow: 0 0 0 3px #e5f2d0; }
 .login-button { margin-top: 8px; padding: 12px; }.login-button:disabled { opacity: .6; cursor: wait; }.login-card small { color: #94a197; font: 10px 'DM Mono', monospace; }.error-message, .api-error { color: #a34d45; background: #fce9e4; border-radius: 5px; padding: 9px 10px; font-size: 11px; }.api-error { margin: 0 42px 15px; }
+.success-message { color: #355126; background: #e6f4cf; border-radius: 5px; padding: 9px 10px; font-size: 11px; }
+.auth-toggle { border: 0; background: transparent; color: #526258; padding: 8px; font: 600 11px Manrope, sans-serif; cursor: pointer; }
+.auth-toggle:hover { color: #355126; text-decoration: underline; }
 .modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: rgba(12, 28, 20, .58); backdrop-filter: blur(3px); }
 .issue-form { width: min(100%, 520px); max-height: calc(100vh - 48px); overflow-y: auto; display: grid; gap: 17px; padding: 28px; border: 1px solid #dfe7dc; border-radius: 10px; background: #f9faf7; box-shadow: 0 28px 80px rgba(10, 26, 17, .28); }
 .project-form { width: min(100%, 560px); }

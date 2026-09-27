@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AUTH_EXPIRED_EVENT, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, listProjects, login, logout, updateIssue } from './api'
+import { AUTH_EXPIRED_EVENT, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, getProfile, listProjectIssues, listProjects, login, logout, register, updateIssue } from './api'
 import type { BackendIssue, Project } from './api'
 import './App.css'
 
@@ -19,6 +19,10 @@ function App() {
   const [token, setToken] = useState(() => localStorage.getItem('issue_tracker_token'))
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [isRegistering, setIsRegistering] = useState(false)
+  const [authMessage, setAuthMessage] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null)
   const [issues, setIssues] = useState<BackendIssue[]>([])
@@ -123,6 +127,27 @@ function App() {
     } finally { setLoading(false) }
   }
 
+  const handleRegister = async (event: FormEvent) => {
+    event.preventDefault()
+    setLoading(true)
+    setError('')
+    setAuthMessage('')
+    try {
+      const profile = await register({
+        username: username.trim(),
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+      })
+      setUsername(profile.username)
+      setPassword('')
+      setIsRegistering(false)
+      setAuthMessage('Account created. Sign in with your new credentials.')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Unable to create account')
+    } finally { setLoading(false) }
+  }
+
   const moveIssue = async (issue: Issue) => {
     const nextStatus: BackendIssue['status'] = issue.status === 'TODO' ? 'IN_PROGRESS' : issue.status === 'IN_PROGRESS' ? 'DONE' : 'TODO'
     try {
@@ -196,7 +221,7 @@ function App() {
     } finally { setLoading(false) }
   }
 
-  if (!token) return <main className="auth-shell"><form className="login-card" onSubmit={handleLogin}><div className="brand"><span className="brand-mark">IT</span><span>issue tracker</span></div><div className="eyebrow">ACME STUDIO / WORKSPACE</div><h1>Welcome back.</h1><p>Sign in to see what needs shipping next.</p><label>Username<input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" /></label><label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label>{error && <div className="error-message">{error}</div>}<button className="create-button login-button" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button><small>Use a registered account from the backend.</small></form></main>
+  if (!token) return <main className="auth-shell"><form className="login-card" onSubmit={isRegistering ? handleRegister : handleLogin}><div className="brand"><span className="brand-mark">IT</span><span>issue tracker</span></div><div className="eyebrow">ACME STUDIO / WORKSPACE</div><h1>{isRegistering ? 'Create account.' : 'Welcome back.'}</h1><p>{isRegistering ? 'Create an account to start tracking work.' : 'Sign in to see what needs shipping next.'}</p>{isRegistering && <label>Full name<input value={fullName} onChange={(event) => setFullName(event.target.value)} autoComplete="name" required maxLength={100} /></label>}<label>Username<input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" required minLength={3} maxLength={50} pattern="[A-Za-z0-9._-]+" /></label>{isRegistering && <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required maxLength={255} /></label>}<label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={isRegistering ? 'new-password' : 'current-password'} required minLength={isRegistering ? 8 : undefined} maxLength={72} /></label>{authMessage && <div className="success-message" role="status">{authMessage}</div>}{error && <div className="error-message" role="alert">{error}</div>}<button className="create-button login-button" disabled={loading}>{loading ? (isRegistering ? 'Creating account...' : 'Signing in...') : (isRegistering ? 'Create account' : 'Sign in')}</button><button className="auth-toggle" type="button" onClick={() => { setIsRegistering((current) => !current); setError(''); setAuthMessage('') }}>{isRegistering ? 'Already have an account? Sign in' : 'New here? Create an account'}</button></form></main>
 
   return <main className="app-shell">
     <aside className="sidebar"><div className="brand"><span className="brand-mark">IT</span><span>issue tracker</span></div><div className="workspace-label">Workspace</div><button className="workspace-switcher" type="button"><span className="workspace-dot" /> Acme Studio <span className="chevron">⌄</span></button><nav className="main-nav"><button className="nav-item active" type="button"><span>▦</span> Overview</button><button className="nav-item" type="button"><span>◈</span> My issues</button><button className="nav-item" type="button"><span>◷</span> Activity</button></nav><div className="projects-heading"><span>Projects</span><button type="button" aria-label="Create project" onClick={() => setIsCreateProjectOpen(true)}>＋</button></div><div className="project-list">{projects.map((project) => <button key={project.id} type="button" className={`project-item ${activeProject?.id === project.id ? 'selected' : ''}`} onClick={() => setActiveProjectId(project.id)}><span className="project-icon">{activeProject?.id === project.id ? '●' : '○'}</span>{project.name}</button>)}</div><div className="sidebar-bottom"><button className="nav-item" type="button" onClick={() => { logout(); setToken(null) }}><span>↪</span> Sign out</button><div className="user-chip"><span className="avatar">{initials(username)}</span><span><strong>{username}</strong><small>Authenticated</small></span></div></div></aside>
