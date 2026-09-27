@@ -44,6 +44,13 @@ export type UserProfile = {
   role: string
 }
 
+export type RegisterRequest = {
+  username: string
+  fullName: string
+  email: string
+  password: string
+}
+
 type ApiErrorBody = {
   message?: string
   errors?: Record<string, string>
@@ -121,6 +128,13 @@ export async function login(username: string, password: string) {
   })
   localStorage.setItem('issue_tracker_token', result.accessToken)
   return result
+}
+
+export function register(request: RegisterRequest) {
+  return apiFetch<UserProfile>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
 }
 
 export function getProfile() {
