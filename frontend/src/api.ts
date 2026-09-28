@@ -148,6 +148,10 @@ export function createProject(request: Pick<Project, 'name' | 'key' | 'descripti
   })
 }
 
+export function deleteProject(projectId: number) {
+  return apiFetch<void>(`/projects/${projectId}`, { method: 'DELETE' })
+}
+
 export function listProjectIssues(projectId: number) {
   return apiFetch<IssuePage>(`/projects/${projectId}/issues?size=100&sort=createdAt,desc`)
 }
