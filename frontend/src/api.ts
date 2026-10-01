@@ -152,6 +152,10 @@ export function deleteProject(projectId: number) {
   return apiFetch<void>(`/projects/${projectId}`, { method: 'DELETE' })
 }
 
+export function deleteIssue(projectId: number, issueId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}`, { method: 'DELETE' })
+}
+
 export function listProjectIssues(projectId: number) {
   return apiFetch<IssuePage>(`/projects/${projectId}/issues?size=100&sort=createdAt,desc`)
 }

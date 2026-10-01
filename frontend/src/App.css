@@ -75,6 +75,8 @@
 .issue-card { background: #fff; border: 1px solid #e5eae3; border-radius: 7px; padding: 15px; box-shadow: 0 4px 15px rgba(32, 51, 39, .035); transition: transform .2s ease, box-shadow .2s ease; animation: rise .45s both; }
 .issue-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(32, 51, 39, .09); }
 .issue-card-top { display: flex; justify-content: space-between; align-items: center; }
+.issue-card-top > div { display: flex; gap: 6px; }
+.issue-card-top button { font: 700 9px Manrope, sans-serif; }
 .issue-id { color: #a0aca3; font: 10px 'DM Mono', monospace; }
 .issue-card h3 { min-height: 40px; margin: 12px 0 17px; font-size: 13px; line-height: 1.5; letter-spacing: -.1px; }
 .card-footer { display: flex; align-items: center; gap: 8px; }
@@ -112,6 +114,7 @@
 .issue-form input:focus, .issue-form textarea:focus, .issue-form select:focus { border-color: #8fba55; box-shadow: 0 0 0 3px #e5f2d0; }
 .issue-form-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
 .issue-form-actions .filter { border: 1px solid #dce5d9; }
+.split-actions { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; }
 .activity-panel { margin: 32px 42px 0; padding: 24px 0; border-top: 1px solid #e4e9e1; }
 .activity-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
 .activity-heading h2 { margin: 0; color: #17221d; font: 800 20px Manrope, sans-serif; }
