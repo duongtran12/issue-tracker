@@ -32,6 +32,7 @@ export default function IssueActivityPanel({ projectId, issues }: IssueActivityP
   const [loadError, setLoadError] = useState<{ issueId: number; message: string } | null>(null)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
   const activeIssueId = issues.some((issue) => issue.id === selectedIssueId)
     ? selectedIssueId
     : issues[0]?.id ?? null
@@ -57,7 +58,13 @@ export default function IssueActivityPanel({ projectId, issues }: IssueActivityP
       })
     })
     return () => { current = false }
-  }, [projectId, activeIssueId])
+  }, [projectId, activeIssueId, reloadKey])
+
+  const retryLoad = () => {
+    setActivity(null)
+    setLoadError(null)
+    setReloadKey((current) => current + 1)
+  }
 
   const submitComment = async (event: FormEvent) => {
     event.preventDefault()
@@ -101,7 +108,7 @@ export default function IssueActivityPanel({ projectId, issues }: IssueActivityP
       </label>
     </div>
 
-    {currentError && <p className="activity-error" role="alert">{currentError.message}</p>}
+    {currentError && <div className="activity-error" role="alert"><p>{currentError.message}</p><button className="filter" type="button" onClick={retryLoad}>Retry</button></div>}
     {!currentActivity && !currentError
       ? <p className="activity-loading" role="status">Loading activity...</p>
       : currentActivity && <div className="activity-columns">
