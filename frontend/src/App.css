@@ -126,7 +126,10 @@
 .comment-form { display: grid; justify-items: end; gap: 8px; margin-bottom: 14px; }
 .comment-form textarea { width: 100%; box-sizing: border-box; resize: vertical; border: 1px solid #dce5d9; border-radius: 5px; padding: 10px 12px; color: #17221d; font: 12px/1.5 Manrope, sans-serif; }
 .comment-form textarea:focus { outline: 0; border-color: #8fba55; box-shadow: 0 0 0 3px #e5f2d0; }
-.comment-edit-button { margin-top: 7px; border: 0; background: transparent; color: #68843f; padding: 0; font: 700 10px Manrope, sans-serif; cursor: pointer; }
+.comment-actions { display: flex; gap: 10px; margin-top: 7px; }
+.comment-actions button { border: 0; background: transparent; color: #68843f; padding: 0; font: 700 10px Manrope, sans-serif; cursor: pointer; }
+.comment-actions .comment-delete-button { color: #a34d45; }
+.comment-actions button:disabled { opacity: .5; cursor: not-allowed; }
 .comment-edit-form { display: grid; gap: 8px; margin-top: 8px; }
 .comment-edit-form textarea { width: 100%; box-sizing: border-box; resize: vertical; border: 1px solid #dce5d9; border-radius: 5px; padding: 9px 10px; font: 11px/1.5 Manrope, sans-serif; }
 .comment-edit-form > div { display: flex; justify-content: flex-end; gap: 6px; }

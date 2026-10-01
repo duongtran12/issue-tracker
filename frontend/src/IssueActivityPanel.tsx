@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { createIssueComment, listIssueComments, listIssueHistory, updateIssueComment } from './api'
+import { createIssueComment, deleteIssueComment, listIssueComments, listIssueHistory, updateIssueComment } from './api'
 import type { IssueComment, IssueHistory } from './api'
 
 type IssueOption = {
@@ -92,6 +92,30 @@ export default function IssueActivityPanel({ projectId, issues, username }: Issu
     }
   }
 
+  const removeComment = async (commentId: number) => {
+    if (!projectId || !selectedIssue || !window.confirm('Delete this comment?')) return
+
+    setSubmitting(true)
+    setLoadError(null)
+    try {
+      await deleteIssueComment(projectId, selectedIssue.id, commentId)
+      setActivity((current) => current?.issueId === selectedIssue.id
+        ? { ...current, comments: current.comments.filter((item) => item.id !== commentId) }
+        : current)
+      if (editingCommentId === commentId) {
+        setEditingCommentId(null)
+        setEditedBody('')
+      }
+    } catch (reason) {
+      setLoadError({
+        issueId: selectedIssue.id,
+        message: reason instanceof Error ? reason.message : 'Unable to delete comment',
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const submitComment = async (event: FormEvent) => {
     event.preventDefault()
     const body = comment.trim()
@@ -159,7 +183,7 @@ export default function IssueActivityPanel({ projectId, issues, username }: Issu
               <div className="activity-item-meta"><strong>{item.authorUsername}</strong><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></div>
               {editingCommentId === item.id
                 ? <div className="comment-edit-form"><textarea value={editedBody} onChange={(event) => setEditedBody(event.target.value)} maxLength={5000} rows={3} /><div><button className="filter" type="button" onClick={() => { setEditingCommentId(null); setEditedBody('') }}>Cancel</button><button className="create-button" type="button" onClick={() => void saveComment(item.id)} disabled={submitting || !editedBody.trim()}>{submitting ? 'Saving...' : 'Save'}</button></div></div>
-                : <><p>{item.body}</p>{item.authorUsername === username && <button className="comment-edit-button" type="button" onClick={() => { setEditingCommentId(item.id); setEditedBody(item.body) }}>Edit</button>}</>}
+                : <><p>{item.body}</p>{item.authorUsername === username && <div className="comment-actions"><button type="button" onClick={() => { setEditingCommentId(item.id); setEditedBody(item.body) }}>Edit</button><button className="comment-delete-button" type="button" onClick={() => void removeComment(item.id)} disabled={submitting}>Delete</button></div>}</>}
             </li>)}
             {currentActivity.comments.length === 0 && <li className="activity-empty">No comments yet.</li>}
           </ol>

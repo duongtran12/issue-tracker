@@ -204,6 +204,12 @@ export function updateIssueComment(projectId: number, issueId: number, commentId
   })
 }
 
+export function deleteIssueComment(projectId: number, issueId: number, commentId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/comments/${commentId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function listIssueHistory(projectId: number, issueId: number) {
   return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
 }
