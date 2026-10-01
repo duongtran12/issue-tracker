@@ -175,6 +175,19 @@ export function listProjectMembers(projectId: number) {
   return apiFetch<ProjectMember[]>(`/projects/${projectId}/members`)
 }
 
+export function addProjectMember(projectId: number, username: string) {
+  return apiFetch<ProjectMember>(`/projects/${projectId}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+  })
+}
+
+export function removeProjectMember(projectId: number, username: string) {
+  return apiFetch<void>(`/projects/${projectId}/members/${encodeURIComponent(username)}`, {
+    method: 'DELETE',
+  })
+}
+
 export function updateIssue(
   projectId: number,
   issueId: number,
