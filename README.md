@@ -18,6 +18,18 @@ A Spring Boot REST API for managing users, projects, issues, comments, and issue
 
 ## Local setup
 
+### Run the full stack with Docker
+
+Start PostgreSQL, the API, and the frontend together:
+
+```powershell
+docker compose up --build
+```
+
+Open `http://localhost:5173`. The frontend proxies `/api` requests to the backend inside the Compose network. The API is also available directly at `http://localhost:8080`.
+
+### Run services manually
+
 Create a PostgreSQL database named `issue_tracker`, then run:
 
 ```powershell
@@ -67,4 +79,4 @@ To point the frontend at another backend, create `frontend/.env.local`:
 VITE_API_URL=http://localhost:8080/api
 ```
 
-The dashboard supports JWT login, project creation, issue creation, status updates, filtering, and manual issue refresh.
+The dashboard supports registration and JWT login, project and member management, issue creation/editing/deletion and assignment, status updates, filtering, comments, and issue history.
