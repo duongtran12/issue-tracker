@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { createIssueComment, listIssueComments, listIssueHistory } from './api'
+import { createIssueComment, listIssueComments, listIssueHistory, updateIssueComment } from './api'
 import type { IssueComment, IssueHistory } from './api'
 
 type IssueOption = {
@@ -11,6 +11,7 @@ type IssueOption = {
 type IssueActivityPanelProps = {
   projectId: number | null
   issues: IssueOption[]
+  username: string
 }
 
 type IssueActivity = {
@@ -26,12 +27,14 @@ function formatDate(value: string) {
   }).format(new Date(value))
 }
 
-export default function IssueActivityPanel({ projectId, issues }: IssueActivityPanelProps) {
+export default function IssueActivityPanel({ projectId, issues, username }: IssueActivityPanelProps) {
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null)
   const [activity, setActivity] = useState<IssueActivity | null>(null)
   const [loadError, setLoadError] = useState<{ issueId: number; message: string } | null>(null)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
+  const [editedBody, setEditedBody] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
   const activeIssueId = issues.some((issue) => issue.id === selectedIssueId)
     ? selectedIssueId
@@ -64,6 +67,29 @@ export default function IssueActivityPanel({ projectId, issues }: IssueActivityP
     setActivity(null)
     setLoadError(null)
     setReloadKey((current) => current + 1)
+  }
+
+  const saveComment = async (commentId: number) => {
+    const body = editedBody.trim()
+    if (!projectId || !selectedIssue || !body) return
+
+    setSubmitting(true)
+    setLoadError(null)
+    try {
+      const updated = await updateIssueComment(projectId, selectedIssue.id, commentId, body)
+      setActivity((current) => current?.issueId === selectedIssue.id
+        ? { ...current, comments: current.comments.map((item) => item.id === updated.id ? updated : item) }
+        : current)
+      setEditingCommentId(null)
+      setEditedBody('')
+    } catch (reason) {
+      setLoadError({
+        issueId: selectedIssue.id,
+        message: reason instanceof Error ? reason.message : 'Unable to update comment',
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const submitComment = async (event: FormEvent) => {
@@ -131,7 +157,9 @@ export default function IssueActivityPanel({ projectId, issues }: IssueActivityP
           <ol className="activity-list">
             {currentActivity.comments.map((item) => <li key={item.id}>
               <div className="activity-item-meta"><strong>{item.authorUsername}</strong><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></div>
-              <p>{item.body}</p>
+              {editingCommentId === item.id
+                ? <div className="comment-edit-form"><textarea value={editedBody} onChange={(event) => setEditedBody(event.target.value)} maxLength={5000} rows={3} /><div><button className="filter" type="button" onClick={() => { setEditingCommentId(null); setEditedBody('') }}>Cancel</button><button className="create-button" type="button" onClick={() => void saveComment(item.id)} disabled={submitting || !editedBody.trim()}>{submitting ? 'Saving...' : 'Save'}</button></div></div>
+                : <><p>{item.body}</p>{item.authorUsername === username && <button className="comment-edit-button" type="button" onClick={() => { setEditingCommentId(item.id); setEditedBody(item.body) }}>Edit</button>}</>}
             </li>)}
             {currentActivity.comments.length === 0 && <li className="activity-empty">No comments yet.</li>}
           </ol>

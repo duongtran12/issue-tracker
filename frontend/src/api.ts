@@ -193,6 +193,13 @@ export function createIssueComment(projectId: number, issueId: number, body: str
   })
 }
 
+export function updateIssueComment(projectId: number, issueId: number, commentId: number, body: string) {
+  return apiFetch<IssueComment>(`/projects/${projectId}/issues/${issueId}/comments/${commentId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ body }),
+  })
+}
+
 export function listIssueHistory(projectId: number, issueId: number) {
   return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
 }
