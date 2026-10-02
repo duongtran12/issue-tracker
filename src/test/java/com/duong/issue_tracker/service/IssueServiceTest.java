@@ -154,6 +154,17 @@ class IssueServiceTest {
         assertThat(response.id()).isEqualTo(5L);
     }
 
+    @Test
+    void findById_shouldRejectMissingIssue() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(99L, 1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> issueService.findById(1L, 99L, "duong"));
+    }
+
             @Test
             void search_shouldNormalizeTextFiltersAndMapPage() {
             User owner = user("duong", 10L);
