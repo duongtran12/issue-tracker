@@ -6,6 +6,10 @@ spring:
     username: ${DB_USERNAME:issue_tracker}
     password: ${DB_PASSWORD:issue_tracker}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
   jpa:
     open-in-view: false
     hibernate:
