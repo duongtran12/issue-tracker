@@ -70,3 +70,13 @@ textarea:focus-visible {
 .fatal-error p {
   margin: 0;
 }
+
+.fatal-error button {
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  background: #c6f36b;
+  color: #14271e;
+  font-weight: 800;
+  cursor: pointer;
+}
