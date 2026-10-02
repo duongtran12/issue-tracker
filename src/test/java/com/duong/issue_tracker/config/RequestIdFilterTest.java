@@ -22,4 +22,16 @@ class RequestIdFilterTest {
                 .isNotBlank()
                 .isEqualTo(request.getAttribute(RequestIdFilter.ATTRIBUTE_NAME));
     }
+
+    @Test
+    void shouldPreserveSafeRequestIdFromClient() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(RequestIdFilter.HEADER_NAME, "client-request_123");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) -> {
+        });
+
+        assertThat(response.getHeader(RequestIdFilter.HEADER_NAME)).isEqualTo("client-request_123");
+    }
 }
