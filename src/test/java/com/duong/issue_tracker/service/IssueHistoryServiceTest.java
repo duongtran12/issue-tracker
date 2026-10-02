@@ -16,6 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class IssueHistoryServiceTest {
@@ -38,6 +43,30 @@ class IssueHistoryServiceTest {
                 "status", "TODO", "DONE");
 
         verify(historyRepository).save(any(IssueHistory.class));
+    }
+
+    @Test
+    void findAll_shouldMapHistoryForProjectOwner() {
+        User owner = user("duong", 10L);
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        IssueHistory history = new IssueHistory();
+        history.setId(7L);
+        history.setIssue(issue);
+        history.setActor(owner);
+        history.setEventType(IssueHistoryEventType.CREATED);
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(historyRepository.findAllByIssueIdOrderByCreatedAtAsc(5L))
+                .thenReturn(List.of(history));
+
+        var response = historyService.findAll(1L, 5L, "duong");
+
+        assertThat(response).singleElement()
+                .satisfies(item -> assertThat(item.eventType()).isEqualTo("CREATED"));
     }
 
     private User user(String username, Long id) {
