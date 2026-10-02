@@ -71,6 +71,13 @@ Tests use the H2 test profile and do not require a running database.
 
 Never use the development JWT fallback in a deployed environment.
 
+## Health checks
+
+- `GET /actuator/health` reports application readiness without authentication.
+- `GET /actuator/info` reports the application name and build version.
+
+Docker Compose uses the health endpoint before starting the frontend.
+
 ## Frontend
 
 The Vite frontend lives in `frontend/` and expects the backend API at `/api` by default.
