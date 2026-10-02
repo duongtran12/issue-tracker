@@ -7,6 +7,7 @@ import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssuePriority;
 import com.duong.issue_tracker.enums.IssueHistoryEventType;
+import com.duong.issue_tracker.enums.IssueStatus;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
@@ -185,6 +186,29 @@ class IssueServiceTest {
         issueService.delete(1L, 5L, "duong");
 
         verify(issueRepository).delete(issue);
+    }
+
+    @Test
+    void update_shouldRecordStatusChange() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        issue.setTitle("Fix login");
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(owner));
+        when(issueRepository.save(issue)).thenReturn(issue);
+
+        issueService.update(1L, 5L,
+                new IssueRequest("Fix login", null, IssueStatus.DONE, IssuePriority.MEDIUM, null),
+                "duong");
+
+        verify(issueHistoryService).record(
+                issue, owner, IssueHistoryEventType.STATUS_CHANGED,
+                "status", "TODO", "DONE");
     }
 
             @Test
