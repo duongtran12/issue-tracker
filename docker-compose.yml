@@ -59,5 +59,9 @@ services:
       timeout: 5s
       retries: 3
 
+networks:
+  default:
+    name: issue-tracker-network
+
 volumes:
   postgres_data:
