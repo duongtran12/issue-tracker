@@ -88,6 +88,29 @@ class IssueHistoryServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
+    @Test
+    void findAll_shouldRepresentMissingActorAsSystem() {
+        User owner = user("duong", 10L);
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        IssueHistory history = new IssueHistory();
+        history.setId(7L);
+        history.setIssue(issue);
+        history.setEventType(IssueHistoryEventType.UPDATED);
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(historyRepository.findAllByIssueIdOrderByCreatedAtAsc(5L))
+                .thenReturn(List.of(history));
+
+        var response = historyService.findAll(1L, 5L, "duong");
+
+        assertThat(response.getFirst().actorUsername()).isNull();
+        assertThat(response.getFirst().actorId()).isNull();
+    }
+
     private User user(String username, Long id) {
         User user = new User();
         user.setId(id);
