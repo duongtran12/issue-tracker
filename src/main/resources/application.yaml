@@ -25,6 +25,7 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+  forward-headers-strategy: framework
   compression:
     enabled: true
     min-response-size: 1KB
