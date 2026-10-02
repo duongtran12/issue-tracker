@@ -116,6 +116,21 @@ class IssueCommentServiceTest {
         verify(commentRepository).save(comment);
     }
 
+    @Test
+    void update_shouldHideAnotherAuthorsComment() {
+        User owner = user("duong", 10L);
+        Issue issue = issue(5L, owner);
+        IssueComment comment = new IssueComment();
+        comment.setId(7L);
+        comment.setIssue(issue);
+        comment.setAuthor(user("alice", 11L));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(commentRepository.findById(7L)).thenReturn(Optional.of(comment));
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.update(
+                1L, 5L, 7L, new CommentRequest("Tampered"), "duong"));
+    }
+
     private Issue issue(Long id, User owner) {
         Project project = new Project();
         project.setId(1L);
