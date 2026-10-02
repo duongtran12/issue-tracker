@@ -163,6 +163,19 @@ class ProjectServiceTest {
                 1L, new ProjectRequest("Name", "TAKEN", null), "duong"));
     }
 
+    @Test
+    void delete_shouldRemoveOwnedProject() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+
+        projectService.delete(1L, "duong");
+
+        verify(projectRepository).delete(project);
+    }
+
         @Test
         void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
