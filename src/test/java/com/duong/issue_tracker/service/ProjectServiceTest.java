@@ -149,6 +149,20 @@ class ProjectServiceTest {
         assertThat(response.key()).isEqualTo("NEW");
     }
 
+    @Test
+    void update_shouldRejectDuplicateChangedKey() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setKey("OLD");
+        project.setOwner(user("duong"));
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectRepository.existsByKey("TAKEN")).thenReturn(true);
+
+        assertThrows(DuplicateResourceException.class, () -> projectService.update(
+                1L, new ProjectRequest("Name", "TAKEN", null), "duong"));
+    }
+
         @Test
         void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
