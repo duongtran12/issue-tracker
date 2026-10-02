@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: issue-tracker-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: issue_tracker
       POSTGRES_USER: issue_tracker
@@ -21,6 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: issue-tracker-backend
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,6 +47,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: issue-tracker-frontend
+    restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
