@@ -129,6 +129,26 @@ class ProjectServiceTest {
         assertThat(response).extracting(ProjectResponse::id).containsExactly(3L);
     }
 
+    @Test
+    void update_shouldPersistOwnedProjectChanges() {
+        User owner = user("duong");
+        Project project = new Project();
+        project.setId(1L);
+        project.setName("Old");
+        project.setKey("OLD");
+        project.setOwner(owner);
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectRepository.existsByKey("NEW")).thenReturn(false);
+        when(projectRepository.save(project)).thenReturn(project);
+
+        ProjectResponse response = projectService.update(
+                1L, new ProjectRequest("New name", "NEW", "Updated"), "duong");
+
+        assertThat(response.name()).isEqualTo("New name");
+        assertThat(response.key()).isEqualTo("NEW");
+    }
+
         @Test
         void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
