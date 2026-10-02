@@ -1,6 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
 const REQUEST_TIMEOUT_MS = 15_000
 export const AUTH_EXPIRED_EVENT = 'issue-tracker:auth-expired'
+export const AUTH_TOKEN_KEY = 'issue_tracker_token'
 
 export type Project = {
   id: number
@@ -68,7 +69,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('issue_tracker_token')
+  const token = localStorage.getItem(AUTH_TOKEN_KEY)
   const headers = new Headers(options.headers)
   if (options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
@@ -87,7 +88,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   }
   if (!response.ok) {
     if (response.status === 401 && token) {
-      localStorage.removeItem('issue_tracker_token')
+      localStorage.removeItem(AUTH_TOKEN_KEY)
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
     }
     const body = await response.json().catch(() => null) as ApiErrorBody | null
@@ -136,7 +137,7 @@ export async function login(username: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })
-  localStorage.setItem('issue_tracker_token', result.accessToken)
+  localStorage.setItem(AUTH_TOKEN_KEY, result.accessToken)
   return result
 }
 
@@ -245,6 +246,6 @@ export function listIssueHistory(projectId: number, issueId: number) {
 }
 
 export function logout() {
-  localStorage.removeItem('issue_tracker_token')
+  localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AUTH_EXPIRED_EVENT, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, deleteIssue, deleteProject, getProfile, listProjectIssues, listProjectMembers, listProjects, login, logout, register, updateIssue } from './api'
+import { AUTH_EXPIRED_EVENT, AUTH_TOKEN_KEY, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, deleteIssue, deleteProject, getProfile, listProjectIssues, listProjectMembers, listProjects, login, logout, register, updateIssue } from './api'
 import type { BackendIssue, Project, ProjectMember } from './api'
 import IssueActivityPanel from './IssueActivityPanel'
 import ProjectMembersModal from './ProjectMembersModal'
@@ -21,7 +21,7 @@ function initials(username: string | null) {
 }
 
 function App() {
-  const [token, setToken] = useState(() => localStorage.getItem('issue_tracker_token'))
+  const [token, setToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY))
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -154,7 +154,7 @@ function App() {
     setError('')
     try {
       await login(username, password)
-      setToken(localStorage.getItem('issue_tracker_token'))
+      setToken(localStorage.getItem(AUTH_TOKEN_KEY))
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to login')
     } finally { setLoading(false) }
