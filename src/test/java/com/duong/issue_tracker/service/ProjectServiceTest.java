@@ -3,7 +3,9 @@ package com.duong.issue_tracker.service;
 import com.duong.issue_tracker.dto.request.ProjectRequest;
 import com.duong.issue_tracker.dto.response.ProjectResponse;
 import com.duong.issue_tracker.entity.Project;
+import com.duong.issue_tracker.entity.ProjectMember;
 import com.duong.issue_tracker.entity.User;
+import com.duong.issue_tracker.enums.ProjectMemberRole;
 import com.duong.issue_tracker.exception.DuplicateResourceException;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.ProjectRepository;
@@ -188,6 +190,22 @@ class ProjectServiceTest {
 
         assertThrows(DuplicateResourceException.class,
                 () -> projectService.addMember(1L, "alice", "duong"));
+    }
+
+    @Test
+    void removeMember_shouldProtectProjectOwner() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        ProjectMember member = new ProjectMember();
+        member.setRole(ProjectMemberRole.OWNER);
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectMemberRepository.findByProjectIdAndUserUsername(1L, "duong"))
+                .thenReturn(Optional.of(member));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> projectService.removeMember(1L, "duong", "duong"));
     }
 
         @Test
