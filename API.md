@@ -120,7 +120,7 @@ Issue body:
 }
 ```
 
-The list endpoint supports `status`, `priority`, `assigneeUsername`, `keyword`, `page`, `size`, and `sort` query parameters. The default page size is 20 and default sort is `createdAt,desc`.
+The list endpoint supports `status`, `priority`, `assigneeUsername`, `keyword`, `page`, `size`, and `sort` query parameters. The default page size is 20 and default sort is `createdAt,desc`. Page size is capped at 100. Supported sort fields are `createdAt`, `updatedAt`, `title`, `status`, and `priority`.
 
 ## Comments and history
 
