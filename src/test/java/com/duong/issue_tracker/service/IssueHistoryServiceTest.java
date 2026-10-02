@@ -5,6 +5,7 @@ import com.duong.issue_tracker.entity.IssueHistory;
 import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssueHistoryEventType;
+import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueHistoryRepository;
 import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
@@ -18,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +69,23 @@ class IssueHistoryServiceTest {
 
         assertThat(response).singleElement()
                 .satisfies(item -> assertThat(item.eventType()).isEqualTo("CREATED"));
+    }
+
+    @Test
+    void findAll_shouldRejectUserOutsideProject() {
+        User owner = user("owner", 10L);
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "intruder"))
+                .thenReturn(false);
+
+        assertThatThrownBy(() -> historyService.findAll(1L, 5L, "intruder"))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     private User user(String username, Long id) {
