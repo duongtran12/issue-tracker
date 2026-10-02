@@ -79,7 +79,10 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   let response: Response
   try {
     response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, signal })
-  } catch {
+  } catch (reason) {
+    if (reason instanceof DOMException && reason.name === 'TimeoutError') {
+      throw new ApiError('The API request timed out. Please try again.', 0)
+    }
     throw new ApiError('Unable to reach the API. Check your connection and try again.', 0)
   }
   if (!response.ok) {
