@@ -6,6 +6,7 @@ import com.duong.issue_tracker.entity.Issue;
 import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssuePriority;
+import com.duong.issue_tracker.enums.IssueHistoryEventType;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
@@ -69,6 +70,11 @@ class IssueServiceTest {
         assertThat(response.id()).isEqualTo(5L);
         assertThat(response.status()).isEqualTo("TODO");
         assertThat(response.priority()).isEqualTo("MEDIUM");
+        verify(issueHistoryService).record(
+                any(Issue.class), org.mockito.ArgumentMatchers.eq(reporter),
+                org.mockito.ArgumentMatchers.eq(IssueHistoryEventType.CREATED),
+                org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull());
     }
 
     @Test
