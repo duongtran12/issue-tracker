@@ -165,6 +165,22 @@ class IssueServiceTest {
                 () -> issueService.findById(1L, 99L, "duong"));
     }
 
+    @Test
+    void delete_shouldRemoveAccessibleIssue() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+
+        issueService.delete(1L, 5L, "duong");
+
+        verify(issueRepository).delete(issue);
+    }
+
             @Test
             void search_shouldNormalizeTextFiltersAndMapPage() {
             User owner = user("duong", 10L);
