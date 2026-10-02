@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class IssueCommentServiceTest {
@@ -93,6 +94,26 @@ class IssueCommentServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> commentService.create(1L, 5L, new CommentRequest("Nope"), "intruder"));
+    }
+
+    @Test
+    void update_shouldAllowCommentAuthor() {
+        User author = user("duong", 10L);
+        Issue issue = issue(5L, author);
+        IssueComment comment = new IssueComment();
+        comment.setId(7L);
+        comment.setIssue(issue);
+        comment.setAuthor(author);
+        comment.setBody("Old body");
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(commentRepository.findById(7L)).thenReturn(Optional.of(comment));
+        when(commentRepository.save(comment)).thenReturn(comment);
+
+        CommentResponse response = commentService.update(
+                1L, 5L, 7L, new CommentRequest("Updated body"), "duong");
+
+        assertThat(response.body()).isEqualTo("Updated body");
+        verify(commentRepository).save(comment);
     }
 
     private Issue issue(Long id, User owner) {
