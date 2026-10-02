@@ -131,6 +131,22 @@ class IssueCommentServiceTest {
                 1L, 5L, 7L, new CommentRequest("Tampered"), "duong"));
     }
 
+    @Test
+    void delete_shouldRemoveOwnComment() {
+        User author = user("duong", 10L);
+        Issue issue = issue(5L, author);
+        IssueComment comment = new IssueComment();
+        comment.setId(7L);
+        comment.setIssue(issue);
+        comment.setAuthor(author);
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(commentRepository.findById(7L)).thenReturn(Optional.of(comment));
+
+        commentService.delete(1L, 5L, 7L, "duong");
+
+        verify(commentRepository).delete(comment);
+    }
+
     private Issue issue(Long id, User owner) {
         Project project = new Project();
         project.setId(1L);
