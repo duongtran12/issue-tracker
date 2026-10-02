@@ -5,6 +5,7 @@ import com.duong.issue_tracker.dto.response.IssueResponse;
 import com.duong.issue_tracker.service.IssueService;
 import com.duong.issue_tracker.enums.IssuePriority;
 import com.duong.issue_tracker.enums.IssueStatus;
+import com.duong.issue_tracker.util.PageableValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -59,7 +60,7 @@ public class IssueController {
                 priority,
                 assigneeUsername,
                 keyword,
-                pageable));
+                PageableValidator.requireAllowedIssueSort(pageable)));
     }
 
     @GetMapping("/{issueId}")

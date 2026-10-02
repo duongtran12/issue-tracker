@@ -1,5 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
+const REQUEST_TIMEOUT_MS = 15_000
 export const AUTH_EXPIRED_EVENT = 'issue-tracker:auth-expired'
+export const AUTH_TOKEN_KEY = 'issue_tracker_token'
 
 export type Project = {
   id: number
@@ -67,17 +69,26 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('issue_tracker_token')
+  const token = localStorage.getItem(AUTH_TOKEN_KEY)
   const headers = new Headers(options.headers)
   if (options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
+  const signal = options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, signal })
+  } catch (reason) {
+    if (reason instanceof DOMException && reason.name === 'TimeoutError') {
+      throw new ApiError('The API request timed out. Please try again.', 0)
+    }
+    throw new ApiError('Unable to reach the API. Check your connection and try again.', 0)
+  }
   if (!response.ok) {
     if (response.status === 401 && token) {
-      localStorage.removeItem('issue_tracker_token')
+      localStorage.removeItem(AUTH_TOKEN_KEY)
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
     }
     const body = await response.json().catch(() => null) as ApiErrorBody | null
@@ -126,7 +137,7 @@ export async function login(username: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })
-  localStorage.setItem('issue_tracker_token', result.accessToken)
+  localStorage.setItem(AUTH_TOKEN_KEY, result.accessToken)
   return result
 }
 
@@ -148,8 +159,19 @@ export function createProject(request: Pick<Project, 'name' | 'key' | 'descripti
   })
 }
 
+export function updateProject(projectId: number, request: Pick<Project, 'name' | 'key' | 'description'>) {
+  return apiFetch<Project>(`/projects/${projectId}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  })
+}
+
 export function deleteProject(projectId: number) {
   return apiFetch<void>(`/projects/${projectId}`, { method: 'DELETE' })
+}
+
+export function deleteIssue(projectId: number, issueId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}`, { method: 'DELETE' })
 }
 
 export function listProjectIssues(projectId: number) {
@@ -169,6 +191,19 @@ export function listProjects() {
 
 export function listProjectMembers(projectId: number) {
   return apiFetch<ProjectMember[]>(`/projects/${projectId}/members`)
+}
+
+export function addProjectMember(projectId: number, username: string) {
+  return apiFetch<ProjectMember>(`/projects/${projectId}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+  })
+}
+
+export function removeProjectMember(projectId: number, username: string) {
+  return apiFetch<void>(`/projects/${projectId}/members/${encodeURIComponent(username)}`, {
+    method: 'DELETE',
+  })
 }
 
 export function updateIssue(
@@ -193,11 +228,24 @@ export function createIssueComment(projectId: number, issueId: number, body: str
   })
 }
 
+export function updateIssueComment(projectId: number, issueId: number, commentId: number, body: string) {
+  return apiFetch<IssueComment>(`/projects/${projectId}/issues/${issueId}/comments/${commentId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ body }),
+  })
+}
+
+export function deleteIssueComment(projectId: number, issueId: number, commentId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/comments/${commentId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function listIssueHistory(projectId: number, issueId: number) {
   return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
 }
 
 export function logout() {
-  localStorage.removeItem('issue_tracker_token')
+  localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
 }

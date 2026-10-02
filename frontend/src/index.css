@@ -44,3 +44,39 @@ textarea:focus-visible {
 #root {
   min-height: 100vh;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.fatal-error {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.fatal-error h1,
+.fatal-error p {
+  margin: 0;
+}
+
+.fatal-error button {
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  background: #c6f36b;
+  color: #14271e;
+  font-weight: 800;
+  cursor: pointer;
+}

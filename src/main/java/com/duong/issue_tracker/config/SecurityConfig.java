@@ -52,6 +52,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(corsProperties.allowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        config.setExposedHeaders(List.of("X-Request-Id"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
@@ -67,7 +68,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                    .requestMatchers("/api/auth/register", "/api/auth/login", "/actuator/health", "/actuator/info").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

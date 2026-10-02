@@ -6,6 +6,8 @@ import com.duong.issue_tracker.entity.Issue;
 import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssuePriority;
+import com.duong.issue_tracker.enums.IssueHistoryEventType;
+import com.duong.issue_tracker.enums.IssueStatus;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
@@ -69,6 +71,11 @@ class IssueServiceTest {
         assertThat(response.id()).isEqualTo(5L);
         assertThat(response.status()).isEqualTo("TODO");
         assertThat(response.priority()).isEqualTo("MEDIUM");
+        verify(issueHistoryService).record(
+                any(Issue.class), org.mockito.ArgumentMatchers.eq(reporter),
+                org.mockito.ArgumentMatchers.eq(IssueHistoryEventType.CREATED),
+                org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull());
     }
 
     @Test
@@ -136,6 +143,72 @@ class IssueServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> issueService.findAll(1L, "intruder"));
+    }
+
+    @Test
+    void findById_shouldReturnIssueForProjectOwner() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+
+        IssueResponse response = issueService.findById(1L, 5L, "duong");
+
+        assertThat(response.id()).isEqualTo(5L);
+    }
+
+    @Test
+    void findById_shouldRejectMissingIssue() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(99L, 1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> issueService.findById(1L, 99L, "duong"));
+    }
+
+    @Test
+    void delete_shouldRemoveAccessibleIssue() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+
+        issueService.delete(1L, 5L, "duong");
+
+        verify(issueRepository).delete(issue);
+    }
+
+    @Test
+    void update_shouldRecordStatusChange() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        issue.setTitle("Fix login");
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(owner));
+        when(issueRepository.save(issue)).thenReturn(issue);
+
+        issueService.update(1L, 5L,
+                new IssueRequest("Fix login", null, IssueStatus.DONE, IssuePriority.MEDIUM, null),
+                "duong");
+
+        verify(issueHistoryService).record(
+                issue, owner, IssueHistoryEventType.STATUS_CHANGED,
+                "status", "TODO", "DONE");
     }
 
             @Test

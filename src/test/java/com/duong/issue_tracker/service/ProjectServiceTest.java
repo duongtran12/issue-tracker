@@ -3,7 +3,9 @@ package com.duong.issue_tracker.service;
 import com.duong.issue_tracker.dto.request.ProjectRequest;
 import com.duong.issue_tracker.dto.response.ProjectResponse;
 import com.duong.issue_tracker.entity.Project;
+import com.duong.issue_tracker.entity.ProjectMember;
 import com.duong.issue_tracker.entity.User;
+import com.duong.issue_tracker.enums.ProjectMemberRole;
 import com.duong.issue_tracker.exception.DuplicateResourceException;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.ProjectRepository;
@@ -127,6 +129,122 @@ class ProjectServiceTest {
         List<ProjectResponse> response = projectService.findMine(" Duong ");
 
         assertThat(response).extracting(ProjectResponse::id).containsExactly(3L);
+    }
+
+    @Test
+    void update_shouldPersistOwnedProjectChanges() {
+        User owner = user("duong");
+        Project project = new Project();
+        project.setId(1L);
+        project.setName("Old");
+        project.setKey("OLD");
+        project.setOwner(owner);
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectRepository.existsByKey("NEW")).thenReturn(false);
+        when(projectRepository.save(project)).thenReturn(project);
+
+        ProjectResponse response = projectService.update(
+                1L, new ProjectRequest("New name", "NEW", "Updated"), "duong");
+
+        assertThat(response.name()).isEqualTo("New name");
+        assertThat(response.key()).isEqualTo("NEW");
+    }
+
+    @Test
+    void update_shouldRejectDuplicateChangedKey() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setKey("OLD");
+        project.setOwner(user("duong"));
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectRepository.existsByKey("TAKEN")).thenReturn(true);
+
+        assertThrows(DuplicateResourceException.class, () -> projectService.update(
+                1L, new ProjectRequest("Name", "TAKEN", null), "duong"));
+    }
+
+    @Test
+    void delete_shouldRemoveOwnedProject() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+
+        projectService.delete(1L, "duong");
+
+        verify(projectRepository).delete(project);
+    }
+
+    @Test
+    void addMember_shouldRejectExistingMembership() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "alice"))
+                .thenReturn(true);
+
+        assertThrows(DuplicateResourceException.class,
+                () -> projectService.addMember(1L, "alice", "duong"));
+    }
+
+    @Test
+    void removeMember_shouldProtectProjectOwner() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        ProjectMember member = new ProjectMember();
+        member.setRole(ProjectMemberRole.OWNER);
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectMemberRepository.findByProjectIdAndUserUsername(1L, "duong"))
+                .thenReturn(Optional.of(member));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> projectService.removeMember(1L, "duong", "duong"));
+    }
+
+    @Test
+    void removeMember_shouldDeleteRegularMember() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        ProjectMember member = new ProjectMember();
+        member.setRole(ProjectMemberRole.MEMBER);
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectMemberRepository.findByProjectIdAndUserUsername(1L, "alice"))
+                .thenReturn(Optional.of(member));
+
+        projectService.removeMember(1L, "alice", "duong");
+
+        verify(projectMemberRepository).delete(member);
+    }
+
+    @Test
+    void findMembers_shouldMapProjectMemberships() {
+        User owner = user("duong");
+        owner.setFullName("Duong Tran");
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        ProjectMember member = new ProjectMember();
+        member.setProject(project);
+        member.setUser(owner);
+        member.setRole(ProjectMemberRole.OWNER);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.findAllByProjectIdOrderByIdAsc(1L))
+                .thenReturn(List.of(member));
+
+        var response = projectService.findMembers(1L, "duong");
+
+        assertThat(response).singleElement()
+                .extracting(item -> item.username())
+                .isEqualTo("duong");
     }
 
         @Test

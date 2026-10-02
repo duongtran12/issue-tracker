@@ -1,0 +1,63 @@
+package com.duong.issue_tracker.config;
+
+import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class RequestIdFilterTest {
+
+    private final RequestIdFilter filter = new RequestIdFilter();
+
+    @Test
+    void shouldGenerateRequestIdWhenHeaderIsMissing() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) -> {
+        });
+
+        assertThat(response.getHeader(RequestIdFilter.HEADER_NAME))
+                .isNotBlank()
+                .isEqualTo(request.getAttribute(RequestIdFilter.ATTRIBUTE_NAME));
+    }
+
+    @Test
+    void shouldPreserveSafeRequestIdFromClient() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(RequestIdFilter.HEADER_NAME, "client-request_123");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) -> {
+        });
+
+        assertThat(response.getHeader(RequestIdFilter.HEADER_NAME)).isEqualTo("client-request_123");
+    }
+
+    @Test
+    void shouldReplaceUnsafeRequestIdFromClient() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(RequestIdFilter.HEADER_NAME, "unsafe value with spaces");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) -> {
+        });
+
+        assertThat(response.getHeader(RequestIdFilter.HEADER_NAME))
+                .isNotEqualTo("unsafe value with spaces")
+                .matches("[a-f0-9-]{36}");
+    }
+
+    @Test
+    void shouldClearRequestIdFromLoggingContext() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) ->
+                assertThat(MDC.get(RequestIdFilter.ATTRIBUTE_NAME)).isNotBlank());
+
+        assertThat(MDC.get(RequestIdFilter.ATTRIBUTE_NAME)).isNull();
+    }
+}
