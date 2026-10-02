@@ -150,6 +150,13 @@ export function createProject(request: Pick<Project, 'name' | 'key' | 'descripti
   })
 }
 
+export function updateProject(projectId: number, request: Pick<Project, 'name' | 'key' | 'description'>) {
+  return apiFetch<Project>(`/projects/${projectId}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  })
+}
+
 export function deleteProject(projectId: number) {
   return apiFetch<void>(`/projects/${projectId}`, { method: 'DELETE' })
 }
