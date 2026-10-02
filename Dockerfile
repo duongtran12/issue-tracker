@@ -15,7 +15,11 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/target/issue-tracker-0.0.1-SNAPSHOT.jar app.jar
+RUN addgroup -S app && adduser -S app -G app
+
+COPY --chown=app:app --from=build /app/target/issue-tracker-0.0.1-SNAPSHOT.jar app.jar
+
+USER app
 
 EXPOSE 8080
 
