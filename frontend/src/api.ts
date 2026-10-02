@@ -76,7 +76,12 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
   const signal = options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS)
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, signal })
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, signal })
+  } catch {
+    throw new ApiError('Unable to reach the API. Check your connection and try again.', 0)
+  }
   if (!response.ok) {
     if (response.status === 401 && token) {
       localStorage.removeItem('issue_tracker_token')
