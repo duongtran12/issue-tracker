@@ -21,6 +21,11 @@ spring:
     time-zone: UTC
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
 
 server:
   port: ${SERVER_PORT:8080}
