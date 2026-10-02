@@ -8,6 +8,10 @@ Protected endpoints require:
 Authorization: Bearer <accessToken>
 ```
 
+Every response includes an `X-Request-Id` header. Clients may send a safe
+`X-Request-Id` value of up to 64 characters to correlate API calls with
+server logs.
+
 ## Authentication
 
 ### Register
