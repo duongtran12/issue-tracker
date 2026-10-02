@@ -28,6 +28,14 @@ docker compose up --build
 
 Open `http://localhost:5173`. The frontend proxies `/api` requests to the backend inside the Compose network. The API is also available directly at `http://localhost:8080`.
 
+Stop the stack while preserving database data:
+
+```powershell
+docker compose down
+```
+
+To also remove the local PostgreSQL volume, explicitly run `docker compose down --volumes`.
+
 ### Run services manually
 
 Create a PostgreSQL database named `issue_tracker`, then run:
