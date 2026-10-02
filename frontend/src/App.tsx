@@ -6,6 +6,8 @@ import IssueActivityPanel from './IssueActivityPanel'
 import ProjectMembersModal from './ProjectMembersModal'
 import './App.css'
 
+const ACTIVE_PROJECT_KEY = 'issue_tracker_active_project'
+
 type IssueStatus = 'Todo' | 'In progress' | 'Done'
 type Issue = BackendIssue & { displayStatus: IssueStatus; displayPriority: 'High' | 'Medium' | 'Low'; assigneeInitials: string }
 
@@ -26,7 +28,10 @@ function App() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [authMessage, setAuthMessage] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
-  const [activeProjectId, setActiveProjectId] = useState<number | null>(null)
+  const [activeProjectId, setActiveProjectId] = useState<number | null>(() => {
+    const savedProjectId = Number(localStorage.getItem(ACTIVE_PROJECT_KEY))
+    return Number.isInteger(savedProjectId) && savedProjectId > 0 ? savedProjectId : null
+  })
   const [issues, setIssues] = useState<BackendIssue[]>([])
   const [members, setMembers] = useState<ProjectMember[]>([])
   const [statusFilter, setStatusFilter] = useState<'All' | IssueStatus>('All')
@@ -79,7 +84,7 @@ function App() {
       try {
         const result = await listProjects()
         setProjects(result)
-        setActiveProjectId((current) => current ?? result[0]?.id ?? null)
+        setActiveProjectId((current) => result.some((project) => project.id === current) ? current : result[0]?.id ?? null)
       } catch (reason) {
         if (!(reason instanceof Error)) return
         setError(reason.message)
@@ -93,6 +98,11 @@ function App() {
     }
     void loadProjects()
   }, [token])
+
+  useEffect(() => {
+    if (activeProjectId) localStorage.setItem(ACTIVE_PROJECT_KEY, String(activeProjectId))
+    else localStorage.removeItem(ACTIVE_PROJECT_KEY)
+  }, [activeProjectId])
 
   useEffect(() => {
     if (!activeProjectId || !token) return
