@@ -1,6 +1,7 @@
 package com.duong.issue_tracker.config;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -47,5 +48,16 @@ class RequestIdFilterTest {
         assertThat(response.getHeader(RequestIdFilter.HEADER_NAME))
                 .isNotEqualTo("unsafe value with spaces")
                 .matches("[a-f0-9-]{36}");
+    }
+
+    @Test
+    void shouldClearRequestIdFromLoggingContext() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) ->
+                assertThat(MDC.get(RequestIdFilter.ATTRIBUTE_NAME)).isNotBlank());
+
+        assertThat(MDC.get(RequestIdFilter.ATTRIBUTE_NAME)).isNull();
     }
 }
