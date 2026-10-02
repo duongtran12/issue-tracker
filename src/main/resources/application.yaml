@@ -65,6 +65,8 @@ info:
     version: "@project.version@"
 
 logging:
+  pattern:
+    level: "%5p [requestId:%X{requestId:-none}]"
   level:
     root: INFO
     com.duong.issue_tracker: INFO
