@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -145,6 +146,30 @@ class IssueCommentServiceTest {
         commentService.delete(1L, 5L, 7L, "duong");
 
         verify(commentRepository).delete(comment);
+    }
+
+    @Test
+    void findAll_shouldMapCommentsInRepositoryOrder() {
+        User owner = user("duong", 10L);
+        Issue issue = issue(5L, owner);
+        IssueComment first = new IssueComment();
+        first.setId(1L);
+        first.setIssue(issue);
+        first.setAuthor(owner);
+        first.setBody("First");
+        IssueComment second = new IssueComment();
+        second.setId(2L);
+        second.setIssue(issue);
+        second.setAuthor(owner);
+        second.setBody("Second");
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(commentRepository.findAllByIssueIdOrderByCreatedAtAsc(5L))
+                .thenReturn(List.of(first, second));
+
+        List<CommentResponse> response = commentService.findAll(1L, 5L, "duong");
+
+        assertThat(response).extracting(CommentResponse::body)
+                .containsExactly("First", "Second");
     }
 
     private Issue issue(Long id, User owner) {
