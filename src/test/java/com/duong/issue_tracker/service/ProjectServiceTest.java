@@ -176,6 +176,20 @@ class ProjectServiceTest {
         verify(projectRepository).delete(project);
     }
 
+    @Test
+    void addMember_shouldRejectExistingMembership() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "alice"))
+                .thenReturn(true);
+
+        assertThrows(DuplicateResourceException.class,
+                () -> projectService.addMember(1L, "alice", "duong"));
+    }
+
         @Test
         void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
