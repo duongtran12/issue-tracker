@@ -43,6 +43,8 @@
 .danger-button { border: 1px solid #e7b8b0; border-radius: 5px; padding: 7px 10px; background: #fff4f1; color: #a34d45; font: 700 10px Manrope, sans-serif; cursor: pointer; }
 .danger-button:disabled { opacity: .5; cursor: not-allowed; }
 .project-delete-action { position: fixed; top: 18px; right: 18px; z-index: 10; }
+.project-settings-actions { position: fixed; top: 18px; right: 18px; z-index: 10; display: flex; gap: 8px; }
+.project-settings-actions .project-delete-action { position: static; }
 .create-button span { font-size: 16px; vertical-align: -1px; margin-right: 4px; }
 .page-heading { padding: 48px 42px 34px; display: flex; align-items: end; justify-content: space-between; gap: 20px; }
 .eyebrow { color: #e18154; margin-bottom: 12px; }
