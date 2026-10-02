@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
+const REQUEST_TIMEOUT_MS = 15_000
 export const AUTH_EXPIRED_EVENT = 'issue-tracker:auth-expired'
 
 export type Project = {
@@ -74,7 +75,8 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   }
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
+  const signal = options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, signal })
   if (!response.ok) {
     if (response.status === 401 && token) {
       localStorage.removeItem('issue_tracker_token')
