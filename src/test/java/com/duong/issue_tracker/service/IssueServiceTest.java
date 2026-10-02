@@ -138,6 +138,22 @@ class IssueServiceTest {
                 () -> issueService.findAll(1L, "intruder"));
     }
 
+    @Test
+    void findById_shouldReturnIssueForProjectOwner() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+
+        IssueResponse response = issueService.findById(1L, 5L, "duong");
+
+        assertThat(response.id()).isEqualTo(5L);
+    }
+
             @Test
             void search_shouldNormalizeTextFiltersAndMapPage() {
             User owner = user("duong", 10L);
