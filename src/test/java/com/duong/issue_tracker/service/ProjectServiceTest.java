@@ -208,6 +208,23 @@ class ProjectServiceTest {
                 () -> projectService.removeMember(1L, "duong", "duong"));
     }
 
+    @Test
+    void removeMember_shouldDeleteRegularMember() {
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user("duong"));
+        ProjectMember member = new ProjectMember();
+        member.setRole(ProjectMemberRole.MEMBER);
+        when(projectRepository.findByIdAndOwnerUsername(1L, "duong"))
+                .thenReturn(Optional.of(project));
+        when(projectMemberRepository.findByProjectIdAndUserUsername(1L, "alice"))
+                .thenReturn(Optional.of(member));
+
+        projectService.removeMember(1L, "alice", "duong");
+
+        verify(projectMemberRepository).delete(member);
+    }
+
         @Test
         void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
