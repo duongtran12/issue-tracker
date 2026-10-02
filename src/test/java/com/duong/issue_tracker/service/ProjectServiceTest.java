@@ -225,6 +225,28 @@ class ProjectServiceTest {
         verify(projectMemberRepository).delete(member);
     }
 
+    @Test
+    void findMembers_shouldMapProjectMemberships() {
+        User owner = user("duong");
+        owner.setFullName("Duong Tran");
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        ProjectMember member = new ProjectMember();
+        member.setProject(project);
+        member.setUser(owner);
+        member.setRole(ProjectMemberRole.OWNER);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.findAllByProjectIdOrderByIdAsc(1L))
+                .thenReturn(List.of(member));
+
+        var response = projectService.findMembers(1L, "duong");
+
+        assertThat(response).singleElement()
+                .extracting(item -> item.username())
+                .isEqualTo("duong");
+    }
+
         @Test
         void addMember_shouldNormalizeUsernameBeforeLookup() {
         User owner = user("duong");
