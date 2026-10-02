@@ -34,4 +34,18 @@ class RequestIdFilterTest {
 
         assertThat(response.getHeader(RequestIdFilter.HEADER_NAME)).isEqualTo("client-request_123");
     }
+
+    @Test
+    void shouldReplaceUnsafeRequestIdFromClient() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(RequestIdFilter.HEADER_NAME, "unsafe value with spaces");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (ignoredRequest, ignoredResponse) -> {
+        });
+
+        assertThat(response.getHeader(RequestIdFilter.HEADER_NAME))
+                .isNotEqualTo("unsafe value with spaces")
+                .matches("[a-f0-9-]{36}");
+    }
 }
