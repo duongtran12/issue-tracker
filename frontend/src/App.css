@@ -344,3 +344,13 @@
     border-right-color: var(--border);
   }
 }
+
+.labels-modal { max-width: 560px; }
+.label-create-form { display: grid; grid-template-columns: 1fr 52px auto; gap: 10px; align-items: center; }
+.label-create-form input[type='color'] { width: 52px; height: 42px; padding: 4px; }
+.label-list { display: grid; gap: 10px; max-height: 340px; overflow: auto; }
+.label-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.issue-label { display: inline-flex; align-items: center; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; line-height: 1; padding: 6px 10px; }
+.issue-label-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.label-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
+.label-checkboxes label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; margin: 0; }
