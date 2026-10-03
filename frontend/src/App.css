@@ -359,3 +359,6 @@
 .label-picker legend { margin-bottom: 8px; color: #526258; font-size: 11px; font-weight: 700; }
 .label-picker input { width: 15px; height: 15px; margin: 0; accent-color: #315f45; }
 .label-picker-empty { color: #99a69c; font-size: 11px; }
+.board-filter-row { display: flex; justify-content: flex-end; margin: -8px 42px 14px; }
+.label-filter { display: inline-flex; align-items: center; gap: 8px; color: #829187; font-size: 10px; font-weight: 700; }
+.label-filter select { border: 1px solid #dce5d9; border-radius: 5px; padding: 7px 28px 7px 9px; background: #fff; color: #26352c; }
