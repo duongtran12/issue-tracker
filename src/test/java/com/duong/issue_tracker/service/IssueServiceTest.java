@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -134,6 +135,23 @@ class IssueServiceTest {
     }
 
     @Test
+    void create_shouldPersistDueDate() {
+        User reporter = user("duong", 10L);
+        Project project = project(1L, reporter);
+        LocalDate dueDate = LocalDate.of(2026, 10, 31);
+        IssueRequest request = new IssueRequest(
+                "Ship release", null, null, IssuePriority.HIGH, null, dueDate);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.dueDate()).isEqualTo(dueDate);
+    }
+
+    @Test
     void findAll_shouldRejectUserOutsideProject() {
         User owner = user("owner", 1L);
         Project project = project(1L, owner);
@@ -209,6 +227,30 @@ class IssueServiceTest {
         verify(issueHistoryService).record(
                 issue, owner, IssueHistoryEventType.STATUS_CHANGED,
                 "status", "TODO", "DONE");
+    }
+
+    @Test
+    void update_shouldRecordDueDateChange() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        issue.setTitle("Ship release");
+        LocalDate dueDate = LocalDate.of(2026, 11, 1);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(owner));
+        when(issueRepository.save(issue)).thenReturn(issue);
+
+        issueService.update(1L, 5L,
+                new IssueRequest("Ship release", null, null, null, null, dueDate),
+                "duong");
+
+        verify(issueHistoryService).record(
+                issue, owner, IssueHistoryEventType.DUE_DATE_CHANGED,
+                "dueDate", null, "2026-11-01");
     }
 
             @Test

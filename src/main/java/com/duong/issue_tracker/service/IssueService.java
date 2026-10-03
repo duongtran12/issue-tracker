@@ -2,7 +2,9 @@ package com.duong.issue_tracker.service;
 
 import com.duong.issue_tracker.dto.request.IssueRequest;
 import com.duong.issue_tracker.dto.response.IssueResponse;
+import com.duong.issue_tracker.dto.response.LabelResponse;
 import com.duong.issue_tracker.entity.Issue;
+import com.duong.issue_tracker.entity.Label;
 import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssuePriority;
@@ -10,6 +12,7 @@ import com.duong.issue_tracker.enums.IssueHistoryEventType;
 import com.duong.issue_tracker.enums.IssueStatus;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueRepository;
+import com.duong.issue_tracker.repository.LabelRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.ProjectRepository;
 import com.duong.issue_tracker.repository.UserRepository;
@@ -22,12 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.LinkedHashSet;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
 public class IssueService {
 
     private final IssueRepository issueRepository;
+    private final LabelRepository labelRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
@@ -96,9 +102,10 @@ public class IssueService {
         IssueStatus oldStatus = issue.getStatus();
         IssuePriority oldPriority = issue.getPriority();
         String oldAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
+        LocalDate oldDueDate = issue.getDueDate();
         apply(issue, request, projectId);
         Issue savedIssue = issueRepository.save(issue);
-        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee);
+        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee, oldDueDate);
         return toResponse(savedIssue);
     }
 
@@ -114,10 +121,25 @@ public class IssueService {
         issue.setStatus(request.status() == null ? IssueStatus.TODO : request.status());
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
+        issue.setDueDate(request.dueDate());
+        issue.setLabels(resolveLabels(projectId, request.labelIds()));
+    }
+
+    private LinkedHashSet<Label> resolveLabels(Long projectId, List<Long> labelIds) {
+        if (labelIds == null || labelIds.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        List<Long> distinctIds = labelIds.stream().distinct().toList();
+        List<Label> labels = labelRepository.findAllByIdInAndProjectId(distinctIds, projectId);
+        if (labels.size() != distinctIds.size()) {
+            throw new ResourceNotFoundException("One or more labels do not belong to project: " + projectId);
+        }
+        return new LinkedHashSet<>(labels);
     }
 
     private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
-                               IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee) {
+                               IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee,
+                               LocalDate oldDueDate) {
         if (!Objects.equals(oldTitle, issue.getTitle())) {
             record(issue, actor, IssueHistoryEventType.UPDATED, "title", oldTitle, issue.getTitle());
         }
@@ -133,6 +155,11 @@ public class IssueService {
         String newAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
         if (!Objects.equals(oldAssignee, newAssignee)) {
             record(issue, actor, IssueHistoryEventType.ASSIGNEE_CHANGED, "assignee", oldAssignee, newAssignee);
+        }
+        if (!Objects.equals(oldDueDate, issue.getDueDate())) {
+            record(issue, actor, IssueHistoryEventType.DUE_DATE_CHANGED, "dueDate",
+                    oldDueDate == null ? null : oldDueDate.toString(),
+                    issue.getDueDate() == null ? null : issue.getDueDate().toString());
         }
     }
 
@@ -186,6 +213,11 @@ public class IssueService {
                 issue.getReporter().getUsername(),
                 assignee == null ? null : assignee.getId(),
                 assignee == null ? null : assignee.getUsername(),
+                issue.getDueDate(),
+                issue.getLabels().stream()
+                        .map(label -> new LabelResponse(label.getId(), label.getProject().getId(),
+                                label.getName(), label.getColor()))
+                        .toList(),
                 issue.getCreatedAt(),
                 issue.getUpdatedAt()
         );

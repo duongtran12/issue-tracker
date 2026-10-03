@@ -82,6 +82,8 @@
 .issue-card-top button { font: 700 9px Manrope, sans-serif; }
 .issue-id { color: #a0aca3; font: 10px 'DM Mono', monospace; }
 .issue-card h3 { min-height: 40px; margin: 12px 0 17px; font-size: 13px; line-height: 1.5; letter-spacing: -.1px; }
+.due-date { margin: -9px 0 12px; color: #718579; font: 9px 'DM Mono', monospace; }
+.due-date.overdue { color: #b44d43; font-weight: 700; }
 .card-footer { display: flex; align-items: center; gap: 8px; }
 .priority, .label { display: inline-flex; align-items: center; gap: 5px; color: #89968d; font: 10px 'DM Mono', monospace; }
 .priority i, .legend i { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: #e5a068; }
@@ -342,3 +344,13 @@
     border-right-color: var(--border);
   }
 }
+
+.labels-modal { max-width: 560px; }
+.label-create-form { display: grid; grid-template-columns: 1fr 52px auto; gap: 10px; align-items: center; }
+.label-create-form input[type='color'] { width: 52px; height: 42px; padding: 4px; }
+.label-list { display: grid; gap: 10px; max-height: 340px; overflow: auto; }
+.label-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.issue-label { display: inline-flex; align-items: center; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; line-height: 1; padding: 6px 10px; }
+.issue-label-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.label-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
+.label-checkboxes label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; margin: 0; }

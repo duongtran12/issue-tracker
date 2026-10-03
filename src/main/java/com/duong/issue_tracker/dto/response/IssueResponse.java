@@ -1,6 +1,8 @@
 package com.duong.issue_tracker.dto.response;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
 
 public record IssueResponse(
         Long id,
@@ -13,6 +15,8 @@ public record IssueResponse(
         String reporterUsername,
         Long assigneeId,
         String assigneeUsername,
+        LocalDate dueDate,
+        List<LabelResponse> labels,
         Instant createdAt,
         Instant updatedAt
 ) {
