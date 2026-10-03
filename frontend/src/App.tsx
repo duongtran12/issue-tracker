@@ -6,6 +6,7 @@ import IssueActivityPanel from './IssueActivityPanel'
 import ProjectMembersModal from './ProjectMembersModal'
 import ProjectEditModal from './ProjectEditModal'
 import ProjectLabelsModal from './ProjectLabelsModal'
+import CreateIssueModal from './CreateIssueModal'
 import { formatDueDate, isOverdue } from './dates'
 import './App.css'
 
@@ -48,6 +49,7 @@ function App() {
   const [newIssuePriority, setNewIssuePriority] = useState<BackendIssue['priority']>('MEDIUM')
   const [newIssueAssignee, setNewIssueAssignee] = useState('')
   const [newIssueDueDate, setNewIssueDueDate] = useState('')
+  const [newIssueLabelIds, setNewIssueLabelIds] = useState<number[]>([])
   const [editingIssue, setEditingIssue] = useState<BackendIssue | null>(null)
   const [isMembersOpen, setIsMembersOpen] = useState(false)
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false)
@@ -231,6 +233,7 @@ function App() {
         priority: newIssuePriority,
         assigneeUsername: newIssueAssignee || null,
         dueDate: newIssueDueDate || null,
+        labelIds: newIssueLabelIds,
       })
       setIssues((current) => [created, ...current])
       setNewIssueTitle('')
@@ -238,6 +241,7 @@ function App() {
       setNewIssuePriority('MEDIUM')
       setNewIssueAssignee('')
       setNewIssueDueDate('')
+      setNewIssueLabelIds([])
       setIsCreateIssueOpen(false)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to create issue')
