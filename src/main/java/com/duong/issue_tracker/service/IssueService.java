@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -96,9 +97,10 @@ public class IssueService {
         IssueStatus oldStatus = issue.getStatus();
         IssuePriority oldPriority = issue.getPriority();
         String oldAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
+        LocalDate oldDueDate = issue.getDueDate();
         apply(issue, request, projectId);
         Issue savedIssue = issueRepository.save(issue);
-        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee);
+        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee, oldDueDate);
         return toResponse(savedIssue);
     }
 
@@ -118,7 +120,8 @@ public class IssueService {
     }
 
     private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
-                               IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee) {
+                               IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee,
+                               LocalDate oldDueDate) {
         if (!Objects.equals(oldTitle, issue.getTitle())) {
             record(issue, actor, IssueHistoryEventType.UPDATED, "title", oldTitle, issue.getTitle());
         }
@@ -134,6 +137,11 @@ public class IssueService {
         String newAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
         if (!Objects.equals(oldAssignee, newAssignee)) {
             record(issue, actor, IssueHistoryEventType.ASSIGNEE_CHANGED, "assignee", oldAssignee, newAssignee);
+        }
+        if (!Objects.equals(oldDueDate, issue.getDueDate())) {
+            record(issue, actor, IssueHistoryEventType.DUE_DATE_CHANGED, "dueDate",
+                    oldDueDate == null ? null : oldDueDate.toString(),
+                    issue.getDueDate() == null ? null : issue.getDueDate().toString());
         }
     }
 
