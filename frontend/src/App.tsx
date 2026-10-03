@@ -228,6 +228,7 @@ function App() {
       setNewIssueDescription('')
       setNewIssuePriority('MEDIUM')
       setNewIssueAssignee('')
+      setNewIssueDueDate('')
       setIsCreateIssueOpen(false)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to create issue')
