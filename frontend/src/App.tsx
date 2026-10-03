@@ -44,6 +44,7 @@ function App() {
   const [newIssueDescription, setNewIssueDescription] = useState('')
   const [newIssuePriority, setNewIssuePriority] = useState<BackendIssue['priority']>('MEDIUM')
   const [newIssueAssignee, setNewIssueAssignee] = useState('')
+  const [newIssueDueDate, setNewIssueDueDate] = useState('')
   const [editingIssue, setEditingIssue] = useState<BackendIssue | null>(null)
   const [isMembersOpen, setIsMembersOpen] = useState(false)
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false)
