@@ -2,7 +2,9 @@ package com.duong.issue_tracker.service;
 
 import com.duong.issue_tracker.dto.request.IssueRequest;
 import com.duong.issue_tracker.dto.response.IssueResponse;
+import com.duong.issue_tracker.dto.response.LabelResponse;
 import com.duong.issue_tracker.entity.Issue;
+import com.duong.issue_tracker.entity.Label;
 import com.duong.issue_tracker.entity.Project;
 import com.duong.issue_tracker.entity.User;
 import com.duong.issue_tracker.enums.IssuePriority;
@@ -10,6 +12,7 @@ import com.duong.issue_tracker.enums.IssueHistoryEventType;
 import com.duong.issue_tracker.enums.IssueStatus;
 import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import com.duong.issue_tracker.repository.IssueRepository;
+import com.duong.issue_tracker.repository.LabelRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.ProjectRepository;
 import com.duong.issue_tracker.repository.UserRepository;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.LinkedHashSet;
 import java.time.LocalDate;
 
 @Service
@@ -29,6 +33,7 @@ import java.time.LocalDate;
 public class IssueService {
 
     private final IssueRepository issueRepository;
+    private final LabelRepository labelRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
@@ -117,6 +122,19 @@ public class IssueService {
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
         issue.setDueDate(request.dueDate());
+        issue.setLabels(resolveLabels(projectId, request.labelIds()));
+    }
+
+    private LinkedHashSet<Label> resolveLabels(Long projectId, List<Long> labelIds) {
+        if (labelIds == null || labelIds.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        List<Long> distinctIds = labelIds.stream().distinct().toList();
+        List<Label> labels = labelRepository.findAllByIdInAndProjectId(distinctIds, projectId);
+        if (labels.size() != distinctIds.size()) {
+            throw new ResourceNotFoundException("One or more labels do not belong to project: " + projectId);
+        }
+        return new LinkedHashSet<>(labels);
     }
 
     private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
@@ -196,6 +214,10 @@ public class IssueService {
                 assignee == null ? null : assignee.getId(),
                 assignee == null ? null : assignee.getUsername(),
                 issue.getDueDate(),
+                issue.getLabels().stream()
+                        .map(label -> new LabelResponse(label.getId(), label.getProject().getId(),
+                                label.getName(), label.getColor()))
+                        .toList(),
                 issue.getCreatedAt(),
                 issue.getUpdatedAt()
         );
