@@ -4,6 +4,7 @@ import com.duong.issue_tracker.enums.IssuePriority;
 import com.duong.issue_tracker.enums.IssueStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 public record IssueRequest(
         @NotBlank(message = "Issue title is required")
@@ -17,6 +18,16 @@ public record IssueRequest(
         IssuePriority priority,
 
         @Size(max = 50, message = "Assignee username must not exceed 50 characters")
-        String assigneeUsername
+        String assigneeUsername,
+
+        LocalDate dueDate
 ) {
+    public IssueRequest(
+            String title,
+            String description,
+            IssueStatus status,
+            IssuePriority priority,
+            String assigneeUsername) {
+        this(title, description, status, priority, assigneeUsername, null);
+    }
 }
