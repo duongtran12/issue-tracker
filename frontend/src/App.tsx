@@ -41,6 +41,7 @@ function App() {
   const [members, setMembers] = useState<ProjectMember[]>([])
   const [labels, setLabels] = useState<Label[]>([])
   const [statusFilter, setStatusFilter] = useState<'All' | IssueStatus>('All')
+  const [labelFilter, setLabelFilter] = useState<number | null>(null)
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -156,8 +157,9 @@ function App() {
   })).filter((issue) => {
     const matchesStatus = statusFilter === 'All' || issue.displayStatus === statusFilter
     const matchesQuery = `${issue.id} ${issue.title} ${issue.description ?? ''}`.toLowerCase().includes(query.toLowerCase())
-    return matchesStatus && matchesQuery
-  }), [issues, query, statusFilter])
+    const matchesLabel = labelFilter === null || issue.labels.some((label) => label.id === labelFilter)
+    return matchesStatus && matchesQuery && matchesLabel
+  }), [issues, labelFilter, query, statusFilter])
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault()
