@@ -218,6 +218,10 @@ export function createProjectLabel(projectId: number, name: string, color: strin
   })
 }
 
+export function deleteProjectLabel(projectId: number, labelId: number) {
+  return apiFetch<void>(`/projects/${projectId}/labels/${labelId}`, { method: 'DELETE' })
+}
+
 export function addProjectMember(projectId: number, username: string) {
   return apiFetch<ProjectMember>(`/projects/${projectId}/members`, {
     method: 'POST',
