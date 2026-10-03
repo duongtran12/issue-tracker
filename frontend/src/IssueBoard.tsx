@@ -1,5 +1,6 @@
-import type { BackendIssue } from './api'
+import type { BackendIssue, Label } from './api'
 import IssueCard from './IssueCard'
+import LabelFilter from './LabelFilter'
 
 export type DisplayStatus = 'Todo' | 'In progress' | 'Done'
 export type DisplayIssue = BackendIssue & {
@@ -12,10 +13,14 @@ type Props = {
   issues: DisplayIssue[]
   onEdit: (issue: DisplayIssue) => void
   onMove: (issue: DisplayIssue) => void
+  labels: Label[]
+  labelFilter: number | null
+  onLabelFilterChange: (value: number | null) => void
 }
 
-export default function IssueBoard({ issues, onEdit, onMove }: Props) {
+export default function IssueBoard({ issues, onEdit, onMove, labels, labelFilter, onLabelFilterChange }: Props) {
   return <>
+    <div className="board-filter-row"><LabelFilter labels={labels} value={labelFilter} onChange={onLabelFilterChange} /></div>
     <div className="board">{(['Todo', 'In progress', 'Done'] as DisplayStatus[]).map((status) => {
       const columnIssues = issues.filter((issue) => issue.displayStatus === status)
       return <section className="column" key={status}>
