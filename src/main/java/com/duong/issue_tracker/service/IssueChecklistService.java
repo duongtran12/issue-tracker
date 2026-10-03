@@ -60,6 +60,12 @@ public class IssueChecklistService {
         return toResponse(checklistRepository.save(item));
     }
 
+    @Transactional
+    public void delete(Long projectId, Long issueId, Long itemId, String username) {
+        findAccessibleIssue(projectId, issueId, username);
+        checklistRepository.delete(findItem(issueId, itemId));
+    }
+
     private Issue findAccessibleIssue(Long projectId, Long issueId, String username) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + projectId));
