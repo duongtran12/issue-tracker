@@ -207,6 +207,10 @@ export function listProjectMembers(projectId: number) {
   return apiFetch<ProjectMember[]>(`/projects/${projectId}/members`)
 }
 
+export function listProjectLabels(projectId: number) {
+  return apiFetch<Label[]>(`/projects/${projectId}/labels`)
+}
+
 export function addProjectMember(projectId: number, username: string) {
   return apiFetch<ProjectMember>(`/projects/${projectId}/members`, {
     method: 'POST',
