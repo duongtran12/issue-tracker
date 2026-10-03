@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class IssueChecklistServiceTest {
@@ -63,6 +64,22 @@ class IssueChecklistServiceTest {
 
         assertThat(response).extracting(ChecklistItemResponse::content)
                 .containsExactly("First", "Second");
+    }
+
+    @Test
+    void update_shouldChangeContentCompletionAndPosition() {
+        Issue issue = accessibleIssue();
+        IssueChecklistItem item = item(9L, issue, "Old", 0);
+        when(checklistRepository.findByIdAndIssueId(9L, 5L)).thenReturn(Optional.of(item));
+        when(checklistRepository.save(item)).thenReturn(item);
+
+        ChecklistItemResponse response = checklistService.update(
+                1L, 5L, 9L, new ChecklistItemRequest("New", true, 3), "duong");
+
+        assertThat(response.content()).isEqualTo("New");
+        assertThat(response.completed()).isTrue();
+        assertThat(response.position()).isEqualTo(3);
+        verify(checklistRepository).save(item);
     }
 
     private Issue accessibleIssue() {
