@@ -211,6 +211,13 @@ export function listProjectLabels(projectId: number) {
   return apiFetch<Label[]>(`/projects/${projectId}/labels`)
 }
 
+export function createProjectLabel(projectId: number, name: string, color: string) {
+  return apiFetch<Label>(`/projects/${projectId}/labels`, {
+    method: 'POST',
+    body: JSON.stringify({ name, color }),
+  })
+}
+
 export function addProjectMember(projectId: number, username: string) {
   return apiFetch<ProjectMember>(`/projects/${projectId}/members`, {
     method: 'POST',
