@@ -229,6 +229,30 @@ class IssueServiceTest {
                 "status", "TODO", "DONE");
     }
 
+    @Test
+    void update_shouldRecordDueDateChange() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        issue.setTitle("Ship release");
+        LocalDate dueDate = LocalDate.of(2026, 11, 1);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(owner));
+        when(issueRepository.save(issue)).thenReturn(issue);
+
+        issueService.update(1L, 5L,
+                new IssueRequest("Ship release", null, null, null, null, dueDate),
+                "duong");
+
+        verify(issueHistoryService).record(
+                issue, owner, IssueHistoryEventType.DUE_DATE_CHANGED,
+                "dueDate", null, "2026-11-01");
+    }
+
             @Test
             void search_shouldNormalizeTextFiltersAndMapPage() {
             User owner = user("duong", 10L);
