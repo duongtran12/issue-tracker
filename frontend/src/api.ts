@@ -127,6 +127,16 @@ export type IssueComment = {
   updatedAt: string
 }
 
+export type ChecklistItem = {
+  id: number
+  issueId: number
+  content: string
+  completed: boolean
+  position: number
+  createdAt: string
+  updatedAt: string
+}
+
 export type IssueHistory = {
   id: number
   issueId: number
