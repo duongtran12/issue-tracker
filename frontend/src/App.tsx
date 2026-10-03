@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AUTH_EXPIRED_EVENT, AUTH_TOKEN_KEY, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, deleteIssue, deleteProject, getProfile, listProjectIssues, listProjectMembers, listProjects, login, logout, register, updateIssue } from './api'
-import type { BackendIssue, Project, ProjectMember } from './api'
+import { AUTH_EXPIRED_EVENT, AUTH_TOKEN_KEY, ApiError, createIssue as createIssueRequest, createProject as createProjectRequest, deleteIssue, deleteProject, getProfile, listProjectIssues, listProjectLabels, listProjectMembers, listProjects, login, logout, register, updateIssue } from './api'
+import type { BackendIssue, Label, Project, ProjectMember } from './api'
 import IssueActivityPanel from './IssueActivityPanel'
 import ProjectMembersModal from './ProjectMembersModal'
 import ProjectEditModal from './ProjectEditModal'
+import ProjectLabelsModal from './ProjectLabelsModal'
 import { formatDueDate, isOverdue } from './dates'
 import './App.css'
 
@@ -36,6 +37,7 @@ function App() {
   })
   const [issues, setIssues] = useState<BackendIssue[]>([])
   const [members, setMembers] = useState<ProjectMember[]>([])
+  const [labels, setLabels] = useState<Label[]>([])
   const [statusFilter, setStatusFilter] = useState<'All' | IssueStatus>('All')
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -49,6 +51,7 @@ function App() {
   const [editingIssue, setEditingIssue] = useState<BackendIssue | null>(null)
   const [isMembersOpen, setIsMembersOpen] = useState(false)
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false)
+  const [isLabelsOpen, setIsLabelsOpen] = useState(false)
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectKey, setNewProjectKey] = useState('')
@@ -61,6 +64,7 @@ function App() {
       setToken(null)
       setProjects([])
       setIssues([])
+      setLabels([])
       setActiveProjectId(null)
       setError('')
     }
@@ -124,12 +128,14 @@ function App() {
     const loadProjectData = async () => {
       setLoading(true)
       try {
-        const [issueResult, memberResult] = await Promise.all([
+        const [issueResult, memberResult, labelResult] = await Promise.all([
           listProjectIssues(activeProjectId),
           listProjectMembers(activeProjectId),
+          listProjectLabels(activeProjectId),
         ])
         setIssues(issueResult.content)
         setMembers(memberResult)
+        setLabels(labelResult)
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : 'Unable to load project data')
       } finally {
