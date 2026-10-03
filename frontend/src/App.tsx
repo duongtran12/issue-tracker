@@ -192,6 +192,7 @@ function App() {
         status: nextStatus,
         priority: issue.priority,
         assigneeUsername: issue.assigneeUsername,
+        dueDate: issue.dueDate,
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to update issue') }
