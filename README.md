@@ -94,4 +94,4 @@ To point the frontend at another backend, create `frontend/.env.local`:
 VITE_API_URL=http://localhost:8080/api
 ```
 
-The dashboard supports registration and JWT login, project creation/editing/deletion and member management, issue creation/editing/deletion and assignment, status updates, filtering, comments, and issue history.
+The dashboard supports registration and JWT login, project creation/editing/deletion and member management, issue creation/editing/deletion, assignment and due dates, status updates, filtering, comments, and issue history.
