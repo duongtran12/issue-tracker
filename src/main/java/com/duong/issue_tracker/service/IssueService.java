@@ -187,6 +187,7 @@ public class IssueService {
                 issue.getReporter().getUsername(),
                 assignee == null ? null : assignee.getId(),
                 assignee == null ? null : assignee.getUsername(),
+                issue.getDueDate(),
                 issue.getCreatedAt(),
                 issue.getUpdatedAt()
         );
