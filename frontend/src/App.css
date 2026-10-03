@@ -355,3 +355,7 @@
 .issue-label-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 .label-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
 .label-checkboxes label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; margin: 0; }
+.label-picker { margin: 0; padding: 0; border: 0; }
+.label-picker legend { margin-bottom: 8px; color: #526258; font-size: 11px; font-weight: 700; }
+.label-picker input { width: 15px; height: 15px; margin: 0; accent-color: #315f45; }
+.label-picker-empty { color: #99a69c; font-size: 11px; }
