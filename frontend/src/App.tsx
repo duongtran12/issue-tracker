@@ -248,6 +248,7 @@ function App() {
         status: editingIssue.status,
         priority: editingIssue.priority,
         assigneeUsername: editingIssue.assigneeUsername,
+        dueDate: editingIssue.dueDate,
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
       setEditingIssue(null)
