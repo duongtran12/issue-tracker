@@ -218,6 +218,13 @@ export function createProjectLabel(projectId: number, name: string, color: strin
   })
 }
 
+export function updateProjectLabel(projectId: number, labelId: number, name: string, color: string) {
+  return apiFetch<Label>(`/projects/${projectId}/labels/${labelId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name, color }),
+  })
+}
+
 export function deleteProjectLabel(projectId: number, labelId: number) {
   return apiFetch<void>(`/projects/${projectId}/labels/${labelId}`, { method: 'DELETE' })
 }
