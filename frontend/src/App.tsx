@@ -221,6 +221,7 @@ function App() {
         status: 'TODO',
         priority: newIssuePriority,
         assigneeUsername: newIssueAssignee || null,
+        dueDate: newIssueDueDate || null,
       })
       setIssues((current) => [created, ...current])
       setNewIssueTitle('')
