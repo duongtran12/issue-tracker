@@ -10,6 +10,7 @@ import com.duong.issue_tracker.repository.IssueChecklistItemRepository;
 import com.duong.issue_tracker.repository.IssueRepository;
 import com.duong.issue_tracker.repository.ProjectMemberRepository;
 import com.duong.issue_tracker.repository.ProjectRepository;
+import com.duong.issue_tracker.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class IssueChecklistServiceTest {
@@ -80,6 +82,32 @@ class IssueChecklistServiceTest {
         assertThat(response.completed()).isTrue();
         assertThat(response.position()).isEqualTo(3);
         verify(checklistRepository).save(item);
+    }
+
+    @Test
+    void delete_shouldRemoveItemFromAccessibleIssue() {
+        Issue issue = accessibleIssue();
+        IssueChecklistItem item = item(9L, issue, "Remove", 0);
+        when(checklistRepository.findByIdAndIssueId(9L, 5L)).thenReturn(Optional.of(item));
+
+        checklistService.delete(1L, 5L, 9L, "duong");
+
+        verify(checklistRepository).delete(item);
+    }
+
+    @Test
+    void findAll_shouldHideProjectFromOutsider() {
+        User owner = new User();
+        owner.setUsername("duong");
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "intruder"))
+                .thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> checklistService.findAll(1L, 5L, "intruder"));
     }
 
     private Issue accessibleIssue() {
