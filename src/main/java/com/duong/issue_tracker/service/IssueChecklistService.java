@@ -47,6 +47,19 @@ public class IssueChecklistService {
         return toResponse(checklistRepository.save(item));
     }
 
+    @Transactional
+    public ChecklistItemResponse update(
+            Long projectId, Long issueId, Long itemId, ChecklistItemRequest request, String username) {
+        findAccessibleIssue(projectId, issueId, username);
+        IssueChecklistItem item = findItem(issueId, itemId);
+        item.setContent(TextNormalizer.compact(request.content()));
+        item.setCompleted(Boolean.TRUE.equals(request.completed()));
+        if (request.position() != null) {
+            item.setPosition(request.position());
+        }
+        return toResponse(checklistRepository.save(item));
+    }
+
     private Issue findAccessibleIssue(Long projectId, Long issueId, String username) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + projectId));
@@ -57,6 +70,11 @@ public class IssueChecklistService {
         }
         return issueRepository.findByIdAndProjectId(issueId, projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Issue not found: " + issueId));
+    }
+
+    private IssueChecklistItem findItem(Long issueId, Long itemId) {
+        return checklistRepository.findByIdAndIssueId(itemId, issueId)
+                .orElseThrow(() -> new ResourceNotFoundException("Checklist item not found: " + itemId));
     }
 
     private ChecklistItemResponse toResponse(IssueChecklistItem item) {
