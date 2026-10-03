@@ -114,6 +114,7 @@ public class IssueService {
         issue.setStatus(request.status() == null ? IssueStatus.TODO : request.status());
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
+        issue.setDueDate(request.dueDate());
     }
 
     private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
