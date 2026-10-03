@@ -11,6 +11,13 @@ export type Project = {
   ownerUsername: string
 }
 
+export type Label = {
+  id: number
+  projectId: number
+  name: string
+  color: string
+}
+
 export type BackendIssue = {
   id: number
   projectId: number
@@ -21,8 +28,14 @@ export type BackendIssue = {
   reporterUsername: string
   assigneeUsername: string | null
   dueDate: string | null
+  labels: Label[]
   createdAt: string
   updatedAt: string
+}
+
+export type IssueMutation = Pick<BackendIssue,
+  'title' | 'description' | 'status' | 'priority' | 'assigneeUsername' | 'dueDate'> & {
+  labelIds?: number[]
 }
 
 export type IssuePage = {
@@ -179,7 +192,7 @@ export function listProjectIssues(projectId: number) {
   return apiFetch<IssuePage>(`/projects/${projectId}/issues?size=100&sort=createdAt,desc`)
 }
 
-export function createIssue(projectId: number, request: Omit<BackendIssue, 'id' | 'projectId' | 'reporterUsername' | 'createdAt' | 'updatedAt'>) {
+export function createIssue(projectId: number, request: IssueMutation) {
   return apiFetch<BackendIssue>(`/projects/${projectId}/issues`, {
     method: 'POST',
     body: JSON.stringify(request),
@@ -210,7 +223,7 @@ export function removeProjectMember(projectId: number, username: string) {
 export function updateIssue(
   projectId: number,
   issueId: number,
-  request: Omit<BackendIssue, 'id' | 'projectId' | 'reporterUsername' | 'createdAt' | 'updatedAt'>,
+  request: IssueMutation,
 ) {
   return apiFetch<BackendIssue>(`/projects/${projectId}/issues/${issueId}`, {
     method: 'PUT',
