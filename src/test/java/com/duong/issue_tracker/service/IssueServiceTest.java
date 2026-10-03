@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -131,6 +132,23 @@ class IssueServiceTest {
         IssueResponse response = issueService.create(1L, request, "duong");
 
         assertThat(response.assigneeUsername()).isEqualTo("other");
+    }
+
+    @Test
+    void create_shouldPersistDueDate() {
+        User reporter = user("duong", 10L);
+        Project project = project(1L, reporter);
+        LocalDate dueDate = LocalDate.of(2026, 10, 31);
+        IssueRequest request = new IssueRequest(
+                "Ship release", null, null, IssuePriority.HIGH, null, dueDate);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.dueDate()).isEqualTo(dueDate);
     }
 
     @Test
