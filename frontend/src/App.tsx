@@ -199,6 +199,7 @@ function App() {
         priority: issue.priority,
         assigneeUsername: issue.assigneeUsername,
         dueDate: issue.dueDate,
+        labelIds: issue.labels.map((label) => label.id),
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to update issue') }
@@ -257,6 +258,7 @@ function App() {
         priority: editingIssue.priority,
         assigneeUsername: editingIssue.assigneeUsername,
         dueDate: editingIssue.dueDate,
+        labelIds: editingIssue.labels.map((label) => label.id),
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
       setEditingIssue(null)
