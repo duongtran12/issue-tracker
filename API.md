@@ -108,6 +108,18 @@ PUT    /api/projects/{projectId}/issues/{issueId}
 DELETE /api/projects/{projectId}/issues/{issueId}
 ```
 
+## Labels
+
+```http
+GET    /api/projects/{projectId}/labels
+POST   /api/projects/{projectId}/labels
+PUT    /api/projects/{projectId}/labels/{labelId}
+DELETE /api/projects/{projectId}/labels/{labelId}
+```
+
+Create and update labels with a name and six-digit hex color, for example
+`{"name":"frontend","color":"#2563EB"}`. Label names are unique within a project.
+
 Issue body:
 
 ```json
