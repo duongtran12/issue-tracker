@@ -20,6 +20,7 @@ export type BackendIssue = {
   priority: 'LOW' | 'MEDIUM' | 'HIGH'
   reporterUsername: string
   assigneeUsername: string | null
+  dueDate: string | null
   createdAt: string
   updatedAt: string
 }
