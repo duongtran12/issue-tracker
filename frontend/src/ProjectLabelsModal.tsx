@@ -71,8 +71,8 @@ export default function ProjectLabelsModal({ project, labels, onClose, onLabelsC
   }
 
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
-    <section className="issue-form labels-modal" role="dialog" aria-modal="true" aria-label="Project labels">
-      <div className="issue-form-heading"><div><div className="eyebrow">PROJECT SETTINGS</div><h2>Labels</h2></div><button type="button" className="icon-button" onClick={onClose}>X</button></div>
+    <section className="issue-form labels-modal" role="dialog" aria-modal="true" aria-labelledby="labels-modal-title">
+      <div className="issue-form-heading"><div><div className="eyebrow">PROJECT SETTINGS</div><h2 id="labels-modal-title">Labels</h2></div><button type="button" className="icon-button" aria-label="Close project labels dialog" onClick={onClose}>X</button></div>
       {error && <div className="api-error">{error}</div>}
       <form className="label-create-form" onSubmit={editingId === null ? addLabel : saveLabel}><input value={name} onChange={(event) => setName(event.target.value)} placeholder="Label name" required maxLength={50} /><input type="color" value={color} onChange={(event) => setColor(event.target.value)} aria-label="Label color" /><button className="create-button" disabled={busy || !name.trim()}>{editingId === null ? 'Add' : 'Save'}</button></form>
       <div className="label-list">{labels.map((label) => <div className="label-row" key={label.id}><span className="issue-label" style={{ backgroundColor: label.color }}>{label.name}</span><span className="label-actions"><button className="filter" type="button" onClick={() => startEditing(label)} disabled={busy}>Edit</button><button className="danger-button" type="button" onClick={() => removeLabel(label)} disabled={busy}>Delete</button></span></div>)}{labels.length === 0 && <p>No labels yet.</p>}</div>
