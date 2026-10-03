@@ -116,9 +116,12 @@ Issue body:
   "description": "Handle expired token",
   "status": "TODO",
   "priority": "MEDIUM",
-  "assigneeUsername": "alice"
+  "assigneeUsername": "alice",
+  "dueDate": "2026-10-31"
 }
 ```
+
+`dueDate` is optional and uses the ISO `YYYY-MM-DD` format.
 
 The list endpoint supports `status`, `priority`, `assigneeUsername`, `keyword`, `page`, `size`, and `sort` query parameters. The default page size is 20 and default sort is `createdAt,desc`. Page size is capped at 100. Supported sort fields are `createdAt`, `updatedAt`, `title`, `status`, and `priority`.
 
