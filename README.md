@@ -94,6 +94,8 @@ To point the frontend at another backend, create `frontend/.env.local`:
 VITE_API_URL=http://localhost:8080/api
 ```
 
-The dashboard supports registration and JWT login, project creation/editing/deletion and member management, issue creation/editing/deletion, assignment, due dates and project-scoped labels, status updates, filtering, comments, and issue history.
+The dashboard supports registration and JWT login, project creation/editing/deletion and member management, issue creation/editing/deletion, assignment, due dates and project-scoped labels, status updates, filtering, comments, checklists, and issue history.
 
 Project members can create color-coded labels from the dashboard and reuse them across issues. Deleting a label safely removes its issue associations without deleting the issues themselves.
+
+Each issue also has an ordered checklist in the details panel, including completion tracking and a visual progress indicator.
