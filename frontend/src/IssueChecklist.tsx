@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { listChecklistItems } from './api'
+import { createChecklistItem, listChecklistItems } from './api'
 import type { ChecklistItem } from './api'
+import type { FormEvent } from 'react'
 
 type Props = {
   projectId: number
@@ -11,6 +12,7 @@ export default function IssueChecklist({ projectId, issueId }: Props) {
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [content, setContent] = useState('')
   const completedCount = useMemo(() => items.filter((item) => item.completed).length, [items])
 
   useEffect(() => {
@@ -22,8 +24,25 @@ export default function IssueChecklist({ projectId, issueId }: Props) {
       .finally(() => setLoading(false))
   }, [issueId, projectId])
 
+  const addItem = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!content.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      const created = await createChecklistItem(projectId, issueId, content.trim())
+      setItems((current) => [...current, created])
+      setContent('')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Unable to add checklist item')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return <section className="checklist-panel" aria-labelledby="checklist-heading">
     <div className="checklist-heading"><h3 id="checklist-heading">Checklist</h3><span>{completedCount}/{items.length}</span></div>
+    <form className="checklist-add" onSubmit={addItem}><input value={content} onChange={(event) => setContent(event.target.value)} placeholder="Add a checklist item" maxLength={500} /><button className="create-button" disabled={loading || !content.trim()}>Add</button></form>
     {error && <p className="activity-error">{error}</p>}
     {loading ? <p className="activity-loading">Loading checklist...</p> : <ul className="checklist-list">{items.map((item) => <li key={item.id}><input type="checkbox" checked={item.completed} readOnly /><span className={item.completed ? 'completed' : ''}>{item.content}</span></li>)}{items.length === 0 && <li className="activity-empty">No checklist items yet.</li>}</ul>}
   </section>
