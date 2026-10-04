@@ -291,6 +291,10 @@ export function listIssueHistory(projectId: number, issueId: number) {
   return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
 }
 
+export function listChecklistItems(projectId: number, issueId: number) {
+  return apiFetch<ChecklistItem[]>(`/projects/${projectId}/issues/${issueId}/checklist`)
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
