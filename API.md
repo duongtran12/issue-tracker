@@ -149,6 +149,15 @@ DELETE /api/projects/{projectId}/issues/{issueId}/comments/{commentId}
 GET    /api/projects/{projectId}/issues/{issueId}/history
 ```
 
+## Issue checklists
+
+```http
+GET    /api/projects/{projectId}/issues/{issueId}/checklist
+POST   /api/projects/{projectId}/issues/{issueId}/checklist
+PUT    /api/projects/{projectId}/issues/{issueId}/checklist/{itemId}
+DELETE /api/projects/{projectId}/issues/{issueId}/checklist/{itemId}
+```
+
 Comment body:
 
 ```json
