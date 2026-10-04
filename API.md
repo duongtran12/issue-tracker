@@ -158,6 +158,18 @@ PUT    /api/projects/{projectId}/issues/{issueId}/checklist/{itemId}
 DELETE /api/projects/{projectId}/issues/{issueId}/checklist/{itemId}
 ```
 
+Checklist create/update body:
+
+```json
+{
+  "content": "Verify the production deployment",
+  "completed": false,
+  "position": 0
+}
+```
+
+`completed` and `position` are optional when creating an item. New items are appended by default.
+
 Comment body:
 
 ```json
