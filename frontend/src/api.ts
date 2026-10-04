@@ -309,6 +309,12 @@ export function updateChecklistItem(projectId: number, issueId: number, item: Ch
   })
 }
 
+export function deleteChecklistItem(projectId: number, issueId: number, itemId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/checklist/${itemId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
