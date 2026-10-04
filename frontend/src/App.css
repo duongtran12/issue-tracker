@@ -366,6 +366,8 @@
 .checklist-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .checklist-heading h3 { margin: 0; color: #26352c; font-size: 12px; }
 .checklist-heading span { color: #829187; font: 10px 'DM Mono', monospace; }
+.checklist-progress { height: 4px; margin: -4px 0 14px; overflow: hidden; border-radius: 999px; background: #e8ece6; }
+.checklist-progress span { display: block; height: 100%; border-radius: inherit; background: #315f45; transition: width 180ms ease; }
 .checklist-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 12px; }
 .checklist-add input { min-width: 0; border: 1px solid #dce5d9; border-radius: 5px; padding: 9px 10px; }
 .checklist-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
