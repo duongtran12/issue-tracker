@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createChecklistItem, listChecklistItems, updateChecklistItem } from './api'
+import { createChecklistItem, deleteChecklistItem, listChecklistItems, updateChecklistItem } from './api'
 import type { ChecklistItem } from './api'
 import type { FormEvent } from 'react'
 
@@ -50,10 +50,20 @@ export default function IssueChecklist({ projectId, issueId }: Props) {
     }
   }
 
+  const removeItem = async (itemId: number) => {
+    setError('')
+    try {
+      await deleteChecklistItem(projectId, issueId, itemId)
+      setItems((current) => current.filter((item) => item.id !== itemId))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Unable to delete checklist item')
+    }
+  }
+
   return <section className="checklist-panel" aria-labelledby="checklist-heading">
     <div className="checklist-heading"><h3 id="checklist-heading">Checklist</h3><span>{completedCount}/{items.length}</span></div>
     <form className="checklist-add" onSubmit={addItem}><input value={content} onChange={(event) => setContent(event.target.value)} placeholder="Add a checklist item" maxLength={500} /><button className="create-button" disabled={loading || !content.trim()}>Add</button></form>
     {error && <p className="activity-error">{error}</p>}
-    {loading ? <p className="activity-loading">Loading checklist...</p> : <ul className="checklist-list">{items.map((item) => <li key={item.id}><input type="checkbox" checked={item.completed} onChange={() => toggleItem(item)} /><span className={item.completed ? 'completed' : ''}>{item.content}</span></li>)}{items.length === 0 && <li className="activity-empty">No checklist items yet.</li>}</ul>}
+    {loading ? <p className="activity-loading">Loading checklist...</p> : <ul className="checklist-list">{items.map((item) => <li key={item.id}><input type="checkbox" checked={item.completed} onChange={() => toggleItem(item)} /><span className={item.completed ? 'completed' : ''}>{item.content}</span><button type="button" className="icon-button" aria-label={`Delete ${item.content}`} onClick={() => removeItem(item.id)}>×</button></li>)}{items.length === 0 && <li className="activity-empty">No checklist items yet.</li>}</ul>}
   </section>
 }
