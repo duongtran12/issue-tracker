@@ -302,6 +302,13 @@ export function createChecklistItem(projectId: number, issueId: number, content:
   })
 }
 
+export function updateChecklistItem(projectId: number, issueId: number, item: ChecklistItem) {
+  return apiFetch<ChecklistItem>(`/projects/${projectId}/issues/${issueId}/checklist/${item.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ content: item.content, completed: item.completed, position: item.position }),
+  })
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
