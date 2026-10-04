@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createIssueComment, deleteIssueComment, listIssueComments, listIssueHistory, updateIssueComment } from './api'
 import type { IssueComment, IssueHistory } from './api'
+import IssueChecklist from './IssueChecklist'
 
 type IssueOption = {
   id: number
@@ -200,5 +201,6 @@ export default function IssueActivityPanel({ projectId, issues, username }: Issu
           </ol>
         </section>
       </div>}
+    {projectId && selectedIssue && <IssueChecklist projectId={projectId} issueId={selectedIssue.id} />}
   </section>
 }
