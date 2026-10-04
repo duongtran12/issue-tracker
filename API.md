@@ -149,6 +149,27 @@ DELETE /api/projects/{projectId}/issues/{issueId}/comments/{commentId}
 GET    /api/projects/{projectId}/issues/{issueId}/history
 ```
 
+## Issue checklists
+
+```http
+GET    /api/projects/{projectId}/issues/{issueId}/checklist
+POST   /api/projects/{projectId}/issues/{issueId}/checklist
+PUT    /api/projects/{projectId}/issues/{issueId}/checklist/{itemId}
+DELETE /api/projects/{projectId}/issues/{issueId}/checklist/{itemId}
+```
+
+Checklist create/update body:
+
+```json
+{
+  "content": "Verify the production deployment",
+  "completed": false,
+  "position": 0
+}
+```
+
+`completed` and `position` are optional when creating an item. New items are appended by default.
+
 Comment body:
 
 ```json

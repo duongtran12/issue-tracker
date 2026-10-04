@@ -127,6 +127,16 @@ export type IssueComment = {
   updatedAt: string
 }
 
+export type ChecklistItem = {
+  id: number
+  issueId: number
+  content: string
+  completed: boolean
+  position: number
+  createdAt: string
+  updatedAt: string
+}
+
 export type IssueHistory = {
   id: number
   issueId: number
@@ -218,6 +228,13 @@ export function createProjectLabel(projectId: number, name: string, color: strin
   })
 }
 
+export function updateProjectLabel(projectId: number, labelId: number, name: string, color: string) {
+  return apiFetch<Label>(`/projects/${projectId}/labels/${labelId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name, color }),
+  })
+}
+
 export function deleteProjectLabel(projectId: number, labelId: number) {
   return apiFetch<void>(`/projects/${projectId}/labels/${labelId}`, { method: 'DELETE' })
 }
@@ -272,6 +289,30 @@ export function deleteIssueComment(projectId: number, issueId: number, commentId
 
 export function listIssueHistory(projectId: number, issueId: number) {
   return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
+}
+
+export function listChecklistItems(projectId: number, issueId: number) {
+  return apiFetch<ChecklistItem[]>(`/projects/${projectId}/issues/${issueId}/checklist`)
+}
+
+export function createChecklistItem(projectId: number, issueId: number, content: string) {
+  return apiFetch<ChecklistItem>(`/projects/${projectId}/issues/${issueId}/checklist`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+}
+
+export function updateChecklistItem(projectId: number, issueId: number, item: ChecklistItem) {
+  return apiFetch<ChecklistItem>(`/projects/${projectId}/issues/${issueId}/checklist/${item.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ content: item.content, completed: item.completed, position: item.position }),
+  })
+}
+
+export function deleteChecklistItem(projectId: number, issueId: number, itemId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/checklist/${itemId}`, {
+    method: 'DELETE',
+  })
 }
 
 export function logout() {
