@@ -201,6 +201,6 @@ export default function IssueActivityPanel({ projectId, issues, username }: Issu
           </ol>
         </section>
       </div>}
-    {projectId && selectedIssue && <IssueChecklist projectId={projectId} issueId={selectedIssue.id} />}
+    {projectId && selectedIssue && <IssueChecklist key={selectedIssue.id} projectId={projectId} issueId={selectedIssue.id} />}
   </section>
 }

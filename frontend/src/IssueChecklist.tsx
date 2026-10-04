@@ -10,15 +10,13 @@ type Props = {
 
 export default function IssueChecklist({ projectId, issueId }: Props) {
   const [items, setItems] = useState<ChecklistItem[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [content, setContent] = useState('')
   const completedCount = useMemo(() => items.filter((item) => item.completed).length, [items])
   const completionPercent = items.length === 0 ? 0 : Math.round((completedCount / items.length) * 100)
 
   useEffect(() => {
-    setLoading(true)
-    setError('')
     listChecklistItems(projectId, issueId)
       .then(setItems)
       .catch((reason: Error) => setError(reason.message))
