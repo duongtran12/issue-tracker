@@ -295,6 +295,13 @@ export function listChecklistItems(projectId: number, issueId: number) {
   return apiFetch<ChecklistItem[]>(`/projects/${projectId}/issues/${issueId}/checklist`)
 }
 
+export function createChecklistItem(projectId: number, issueId: number, content: string) {
+  return apiFetch<ChecklistItem>(`/projects/${projectId}/issues/${issueId}/checklist`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
