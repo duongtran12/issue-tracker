@@ -15,6 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.duong.issue_tracker.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class IssueTimeEntryServiceTest {
@@ -72,6 +74,29 @@ class IssueTimeEntryServiceTest {
 
         assertThat(response.minutes()).isEqualTo(60);
         verify(timeEntryRepository).save(entry);
+    }
+
+    @Test
+    void delete_shouldRejectAnotherUsersEntry() {
+        Issue issue = accessibleIssue("duong");
+        User other = new User();
+        other.setUsername("alice");
+        IssueTimeEntry entry = entry(7L, issue, other, 30, LocalDate.of(2026, 10, 5));
+        when(timeEntryRepository.findByIdAndIssueId(7L, 5L)).thenReturn(Optional.of(entry));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.delete(1L, 5L, 7L, "duong"));
+    }
+
+    @Test
+    void delete_shouldRemoveOwnedEntry() {
+        Issue issue = accessibleIssue("duong");
+        IssueTimeEntry entry = entry(7L, issue, issue.getProject().getOwner(), 30, LocalDate.now());
+        when(timeEntryRepository.findByIdAndIssueId(7L, 5L)).thenReturn(Optional.of(entry));
+
+        service.delete(1L, 5L, 7L, "duong");
+
+        verify(timeEntryRepository).delete(entry);
     }
 
     private IssueTimeEntry entry(Long id, Issue issue, User user, int minutes, LocalDate date) {
