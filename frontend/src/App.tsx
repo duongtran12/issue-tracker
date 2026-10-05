@@ -51,6 +51,7 @@ function App() {
   const [newIssuePriority, setNewIssuePriority] = useState<BackendIssue['priority']>('MEDIUM')
   const [newIssueAssignee, setNewIssueAssignee] = useState('')
   const [newIssueDueDate, setNewIssueDueDate] = useState('')
+  const [newIssueEstimate, setNewIssueEstimate] = useState('')
   const [newIssueLabelIds, setNewIssueLabelIds] = useState<number[]>([])
   const [editingIssue, setEditingIssue] = useState<BackendIssue | null>(null)
   const [isMembersOpen, setIsMembersOpen] = useState(false)
@@ -204,6 +205,7 @@ function App() {
         priority: issue.priority,
         assigneeUsername: issue.assigneeUsername,
         dueDate: issue.dueDate,
+        estimateMinutes: issue.estimateMinutes,
         labelIds: issue.labels.map((label) => label.id),
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
@@ -236,6 +238,7 @@ function App() {
         priority: newIssuePriority,
         assigneeUsername: newIssueAssignee || null,
         dueDate: newIssueDueDate || null,
+        estimateMinutes: newIssueEstimate ? Number(newIssueEstimate) : null,
         labelIds: newIssueLabelIds,
       })
       setIssues((current) => [created, ...current])
@@ -244,6 +247,7 @@ function App() {
       setNewIssuePriority('MEDIUM')
       setNewIssueAssignee('')
       setNewIssueDueDate('')
+      setNewIssueEstimate('')
       setNewIssueLabelIds([])
       setIsCreateIssueOpen(false)
     } catch (reason) {
@@ -265,6 +269,7 @@ function App() {
         priority: editingIssue.priority,
         assigneeUsername: editingIssue.assigneeUsername,
         dueDate: editingIssue.dueDate,
+        estimateMinutes: editingIssue.estimateMinutes,
         labelIds: editingIssue.labels.map((label) => label.id),
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
