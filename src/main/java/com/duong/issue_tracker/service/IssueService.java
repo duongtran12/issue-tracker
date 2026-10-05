@@ -122,6 +122,7 @@ public class IssueService {
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
         issue.setDueDate(request.dueDate());
+        issue.setEstimateMinutes(request.estimateMinutes());
         issue.setLabels(resolveLabels(projectId, request.labelIds()));
     }
 
@@ -214,6 +215,7 @@ public class IssueService {
                 assignee == null ? null : assignee.getId(),
                 assignee == null ? null : assignee.getUsername(),
                 issue.getDueDate(),
+                issue.getEstimateMinutes(),
                 issue.getLabels().stream()
                         .map(label -> new LabelResponse(label.getId(), label.getProject().getId(),
                                 label.getName(), label.getColor()))
