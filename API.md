@@ -130,11 +130,13 @@ Issue body:
   "priority": "MEDIUM",
   "assigneeUsername": "alice",
   "dueDate": "2026-10-31",
+  "estimateMinutes": 240,
   "labelIds": [1, 3]
 }
 ```
 
 `dueDate` is optional and uses the ISO `YYYY-MM-DD` format.
+`estimateMinutes` is optional and must be a positive integer.
 `labelIds` is optional; every selected label must belong to the issue's project.
 
 The list endpoint supports `status`, `priority`, `assigneeUsername`, `keyword`, `page`, `size`, and `sort` query parameters. The default page size is 20 and default sort is `createdAt,desc`. Page size is capped at 100. Supported sort fields are `createdAt`, `updatedAt`, `title`, `status`, and `priority`.
