@@ -28,13 +28,14 @@ export type BackendIssue = {
   reporterUsername: string
   assigneeUsername: string | null
   dueDate: string | null
+  estimateMinutes: number | null
   labels: Label[]
   createdAt: string
   updatedAt: string
 }
 
 export type IssueMutation = Pick<BackendIssue,
-  'title' | 'description' | 'status' | 'priority' | 'assigneeUsername' | 'dueDate'> & {
+  'title' | 'description' | 'status' | 'priority' | 'assigneeUsername' | 'dueDate' | 'estimateMinutes'> & {
   labelIds?: number[]
 }
 
@@ -142,7 +143,7 @@ export type IssueHistory = {
   issueId: number
   actorId: number | null
   actorUsername: string | null
-  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED'
+  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED' | 'DUE_DATE_CHANGED' | 'ESTIMATE_CHANGED'
   fieldName: string | null
   oldValue: string | null
   newValue: string | null
