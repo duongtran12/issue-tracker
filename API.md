@@ -172,6 +172,15 @@ Checklist create/update body:
 
 `completed` and `position` are optional when creating an item. New items are appended by default.
 
+## Time tracking
+
+```http
+GET    /api/projects/{projectId}/issues/{issueId}/time-entries
+POST   /api/projects/{projectId}/issues/{issueId}/time-entries
+PUT    /api/projects/{projectId}/issues/{issueId}/time-entries/{entryId}
+DELETE /api/projects/{projectId}/issues/{issueId}/time-entries/{entryId}
+```
+
 Comment body:
 
 ```json
