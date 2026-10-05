@@ -28,13 +28,14 @@ export type BackendIssue = {
   reporterUsername: string
   assigneeUsername: string | null
   dueDate: string | null
+  estimateMinutes: number | null
   labels: Label[]
   createdAt: string
   updatedAt: string
 }
 
 export type IssueMutation = Pick<BackendIssue,
-  'title' | 'description' | 'status' | 'priority' | 'assigneeUsername' | 'dueDate'> & {
+  'title' | 'description' | 'status' | 'priority' | 'assigneeUsername' | 'dueDate' | 'estimateMinutes'> & {
   labelIds?: number[]
 }
 
@@ -137,12 +138,24 @@ export type ChecklistItem = {
   updatedAt: string
 }
 
+export type TimeEntry = {
+  id: number
+  issueId: number
+  userId: number
+  username: string
+  minutes: number
+  workDate: string
+  note: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export type IssueHistory = {
   id: number
   issueId: number
   actorId: number | null
   actorUsername: string | null
-  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED'
+  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED' | 'DUE_DATE_CHANGED' | 'ESTIMATE_CHANGED'
   fieldName: string | null
   oldValue: string | null
   newValue: string | null
@@ -311,6 +324,30 @@ export function updateChecklistItem(projectId: number, issueId: number, item: Ch
 
 export function deleteChecklistItem(projectId: number, issueId: number, itemId: number) {
   return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/checklist/${itemId}`, {
+    method: 'DELETE',
+  })
+}
+
+export function listTimeEntries(projectId: number, issueId: number) {
+  return apiFetch<TimeEntry[]>(`/projects/${projectId}/issues/${issueId}/time-entries`)
+}
+
+export function createTimeEntry(projectId: number, issueId: number, minutes: number, workDate: string, note: string) {
+  return apiFetch<TimeEntry>(`/projects/${projectId}/issues/${issueId}/time-entries`, {
+    method: 'POST',
+    body: JSON.stringify({ minutes, workDate, note: note.trim() || null }),
+  })
+}
+
+export function updateTimeEntry(projectId: number, issueId: number, entry: TimeEntry) {
+  return apiFetch<TimeEntry>(`/projects/${projectId}/issues/${issueId}/time-entries/${entry.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ minutes: entry.minutes, workDate: entry.workDate, note: entry.note }),
+  })
+}
+
+export function deleteTimeEntry(projectId: number, issueId: number, entryId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/time-entries/${entryId}`, {
     method: 'DELETE',
   })
 }

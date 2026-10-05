@@ -152,6 +152,23 @@ class IssueServiceTest {
     }
 
     @Test
+    void create_shouldPersistEstimate() {
+        User reporter = user("duong", 10L);
+        Project project = project(1L, reporter);
+        IssueRequest request = new IssueRequest(
+                "Estimate release", null, null, IssuePriority.HIGH, null,
+                null, 240, java.util.List.of());
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "duong")).thenReturn(false);
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(reporter));
+        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        IssueResponse response = issueService.create(1L, request, "duong");
+
+        assertThat(response.estimateMinutes()).isEqualTo(240);
+    }
+
+    @Test
     void findAll_shouldRejectUserOutsideProject() {
         User owner = user("owner", 1L);
         Project project = project(1L, owner);
@@ -251,6 +268,28 @@ class IssueServiceTest {
         verify(issueHistoryService).record(
                 issue, owner, IssueHistoryEventType.DUE_DATE_CHANGED,
                 "dueDate", null, "2026-11-01");
+    }
+
+    @Test
+    void update_shouldRecordEstimateChange() {
+        User owner = user("duong", 10L);
+        Project project = project(1L, owner);
+        Issue issue = new Issue();
+        issue.setId(5L);
+        issue.setProject(project);
+        issue.setReporter(owner);
+        issue.setTitle("Ship release");
+        issue.setEstimateMinutes(60);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(issueRepository.findByIdAndProjectId(5L, 1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("duong")).thenReturn(Optional.of(owner));
+        when(issueRepository.save(issue)).thenReturn(issue);
+
+        issueService.update(1L, 5L, new IssueRequest(
+                "Ship release", null, null, null, null, null, 120, java.util.List.of()), "duong");
+
+        verify(issueHistoryService).record(issue, owner, IssueHistoryEventType.ESTIMATE_CHANGED,
+                "estimateMinutes", "60", "120");
     }
 
             @Test

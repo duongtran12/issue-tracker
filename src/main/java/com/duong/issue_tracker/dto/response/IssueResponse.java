@@ -16,6 +16,7 @@ public record IssueResponse(
         Long assigneeId,
         String assigneeUsername,
         LocalDate dueDate,
+        Integer estimateMinutes,
         List<LabelResponse> labels,
         Instant createdAt,
         Instant updatedAt

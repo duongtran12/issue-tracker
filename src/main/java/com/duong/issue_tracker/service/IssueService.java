@@ -103,9 +103,11 @@ public class IssueService {
         IssuePriority oldPriority = issue.getPriority();
         String oldAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
         LocalDate oldDueDate = issue.getDueDate();
+        Integer oldEstimateMinutes = issue.getEstimateMinutes();
         apply(issue, request, projectId);
         Issue savedIssue = issueRepository.save(issue);
-        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee, oldDueDate);
+        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority,
+                oldAssignee, oldDueDate, oldEstimateMinutes);
         return toResponse(savedIssue);
     }
 
@@ -122,6 +124,7 @@ public class IssueService {
         issue.setPriority(request.priority() == null ? IssuePriority.MEDIUM : request.priority());
         issue.setAssignee(resolveAssignee(projectId, request.assigneeUsername()));
         issue.setDueDate(request.dueDate());
+        issue.setEstimateMinutes(request.estimateMinutes());
         issue.setLabels(resolveLabels(projectId, request.labelIds()));
     }
 
@@ -139,7 +142,7 @@ public class IssueService {
 
     private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
                                IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee,
-                               LocalDate oldDueDate) {
+                               LocalDate oldDueDate, Integer oldEstimateMinutes) {
         if (!Objects.equals(oldTitle, issue.getTitle())) {
             record(issue, actor, IssueHistoryEventType.UPDATED, "title", oldTitle, issue.getTitle());
         }
@@ -160,6 +163,11 @@ public class IssueService {
             record(issue, actor, IssueHistoryEventType.DUE_DATE_CHANGED, "dueDate",
                     oldDueDate == null ? null : oldDueDate.toString(),
                     issue.getDueDate() == null ? null : issue.getDueDate().toString());
+        }
+        if (!Objects.equals(oldEstimateMinutes, issue.getEstimateMinutes())) {
+            record(issue, actor, IssueHistoryEventType.ESTIMATE_CHANGED, "estimateMinutes",
+                    oldEstimateMinutes == null ? null : oldEstimateMinutes.toString(),
+                    issue.getEstimateMinutes() == null ? null : issue.getEstimateMinutes().toString());
         }
     }
 
@@ -214,6 +222,7 @@ public class IssueService {
                 assignee == null ? null : assignee.getId(),
                 assignee == null ? null : assignee.getUsername(),
                 issue.getDueDate(),
+                issue.getEstimateMinutes(),
                 issue.getLabels().stream()
                         .map(label -> new LabelResponse(label.getId(), label.getProject().getId(),
                                 label.getName(), label.getColor()))

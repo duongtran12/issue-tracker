@@ -9,6 +9,7 @@ type Props = {
   priority: BackendIssue['priority']
   assignee: string
   dueDate: string
+  estimate: string
   labelIds: number[]
   members: ProjectMember[]
   labels: Label[]
@@ -17,6 +18,7 @@ type Props = {
   onPriorityChange: (value: BackendIssue['priority']) => void
   onAssigneeChange: (value: string) => void
   onDueDateChange: (value: string) => void
+  onEstimateChange: (value: string) => void
   onLabelIdsChange: (value: number[]) => void
   onClose: () => void
   onSubmit: (event: FormEvent) => void
@@ -31,6 +33,7 @@ export default function CreateIssueModal(props: Props) {
       <label>Priority<select value={props.priority} onChange={(event) => props.onPriorityChange(event.target.value as BackendIssue['priority'])}><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option></select></label>
       <label>Assignee<select value={props.assignee} onChange={(event) => props.onAssigneeChange(event.target.value)}><option value="">Unassigned</option>{props.members.map((member) => <option key={member.userId} value={member.username}>{member.fullName} ({member.username})</option>)}</select></label>
       <label>Due date<input type="date" value={props.dueDate} onChange={(event) => props.onDueDateChange(event.target.value)} /></label>
+      <label>Estimate (minutes)<input type="number" min="1" value={props.estimate} onChange={(event) => props.onEstimateChange(event.target.value)} placeholder="e.g. 120" /></label>
       <IssueLabelPicker labels={props.labels} selectedIds={props.labelIds} onChange={props.onLabelIdsChange} />
       <div className="issue-form-actions"><button type="button" className="filter" onClick={props.onClose}>Cancel</button><button className="create-button" type="submit" disabled={props.loading}>{props.loading ? 'Creating...' : 'Create issue'}</button></div>
     </form>

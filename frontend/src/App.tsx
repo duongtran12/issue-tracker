@@ -51,6 +51,7 @@ function App() {
   const [newIssuePriority, setNewIssuePriority] = useState<BackendIssue['priority']>('MEDIUM')
   const [newIssueAssignee, setNewIssueAssignee] = useState('')
   const [newIssueDueDate, setNewIssueDueDate] = useState('')
+  const [newIssueEstimate, setNewIssueEstimate] = useState('')
   const [newIssueLabelIds, setNewIssueLabelIds] = useState<number[]>([])
   const [editingIssue, setEditingIssue] = useState<BackendIssue | null>(null)
   const [isMembersOpen, setIsMembersOpen] = useState(false)
@@ -204,6 +205,7 @@ function App() {
         priority: issue.priority,
         assigneeUsername: issue.assigneeUsername,
         dueDate: issue.dueDate,
+        estimateMinutes: issue.estimateMinutes,
         labelIds: issue.labels.map((label) => label.id),
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
@@ -236,6 +238,7 @@ function App() {
         priority: newIssuePriority,
         assigneeUsername: newIssueAssignee || null,
         dueDate: newIssueDueDate || null,
+        estimateMinutes: newIssueEstimate ? Number(newIssueEstimate) : null,
         labelIds: newIssueLabelIds,
       })
       setIssues((current) => [created, ...current])
@@ -244,6 +247,7 @@ function App() {
       setNewIssuePriority('MEDIUM')
       setNewIssueAssignee('')
       setNewIssueDueDate('')
+      setNewIssueEstimate('')
       setNewIssueLabelIds([])
       setIsCreateIssueOpen(false)
     } catch (reason) {
@@ -265,6 +269,7 @@ function App() {
         priority: editingIssue.priority,
         assigneeUsername: editingIssue.assigneeUsername,
         dueDate: editingIssue.dueDate,
+        estimateMinutes: editingIssue.estimateMinutes,
         labelIds: editingIssue.labels.map((label) => label.id),
       })
       setIssues((current) => current.map((item) => item.id === updated.id ? updated : item))
@@ -338,7 +343,7 @@ function App() {
     {activeProjectId && !loading && issues.length === 0 && <div className="empty-hint">No issues in this project yet. Create the first one from the button above.</div>}
     <button className="filter refresh-button" type="button" onClick={refreshIssues} disabled={loading}>{loading ? 'Refreshing...' : 'Refresh issues'}</button>
     {isCreateProjectOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsCreateProjectOpen(false) }}><form className="issue-form project-form" onSubmit={createProject}><div className="issue-form-heading"><div><div className="eyebrow">NEW PROJECT</div><h2>Create a project</h2></div><button type="button" className="icon-button" aria-label="Close create project dialog" onClick={() => setIsCreateProjectOpen(false)}>X</button></div><label>Name<input value={newProjectName} onChange={(event) => setNewProjectName(event.target.value)} placeholder="Project name" required maxLength={100} autoFocus /></label><label>Key<input value={newProjectKey} onChange={(event) => setNewProjectKey(event.target.value.replace(/\s/g, '').toUpperCase())} placeholder="e.g. CRM" required maxLength={20} pattern="[A-Z0-9_-]+" /></label><label>Description<textarea value={newProjectDescription} onChange={(event) => setNewProjectDescription(event.target.value)} placeholder="What is this project about?" maxLength={1000} rows={4} /></label><div className="issue-form-actions"><button type="button" className="filter" onClick={() => setIsCreateProjectOpen(false)}>Cancel</button><button className="create-button" type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create project'}</button></div></form></div>}
-    {isCreateIssueOpen && <CreateIssueModal loading={loading} title={newIssueTitle} description={newIssueDescription} priority={newIssuePriority} assignee={newIssueAssignee} dueDate={newIssueDueDate} labelIds={newIssueLabelIds} members={members} labels={labels} onTitleChange={setNewIssueTitle} onDescriptionChange={setNewIssueDescription} onPriorityChange={setNewIssuePriority} onAssigneeChange={setNewIssueAssignee} onDueDateChange={setNewIssueDueDate} onLabelIdsChange={setNewIssueLabelIds} onClose={() => setIsCreateIssueOpen(false)} onSubmit={createIssue} />}
+    {isCreateIssueOpen && <CreateIssueModal loading={loading} title={newIssueTitle} description={newIssueDescription} priority={newIssuePriority} assignee={newIssueAssignee} dueDate={newIssueDueDate} estimate={newIssueEstimate} labelIds={newIssueLabelIds} members={members} labels={labels} onTitleChange={setNewIssueTitle} onDescriptionChange={setNewIssueDescription} onPriorityChange={setNewIssuePriority} onAssigneeChange={setNewIssueAssignee} onDueDateChange={setNewIssueDueDate} onEstimateChange={setNewIssueEstimate} onLabelIdsChange={setNewIssueLabelIds} onClose={() => setIsCreateIssueOpen(false)} onSubmit={createIssue} />}
     {editingIssue && <EditIssueModal issue={editingIssue} members={members} labels={labels} loading={loading} onChange={setEditingIssue} onClose={() => setEditingIssue(null)} onDelete={removeIssue} onSubmit={saveIssue} />}
     {isMembersOpen && activeProject && <ProjectMembersModal project={activeProject} members={members} currentUsername={username} onClose={() => setIsMembersOpen(false)} onMembersChange={setMembers} />}
     {isLabelsOpen && activeProject && <ProjectLabelsModal project={activeProject} labels={labels} onClose={() => setIsLabelsOpen(false)} onLabelsChange={setLabels} />}

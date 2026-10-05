@@ -4,6 +4,7 @@ import com.duong.issue_tracker.enums.IssuePriority;
 import com.duong.issue_tracker.enums.IssueStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,6 +24,9 @@ public record IssueRequest(
 
         LocalDate dueDate,
 
+        @Positive(message = "Estimate must be greater than zero")
+        Integer estimateMinutes,
+
         List<Long> labelIds
 ) {
     public IssueRequest(
@@ -31,7 +35,7 @@ public record IssueRequest(
             IssueStatus status,
             IssuePriority priority,
             String assigneeUsername) {
-        this(title, description, status, priority, assigneeUsername, null, List.of());
+        this(title, description, status, priority, assigneeUsername, null, null, List.of());
     }
 
     public IssueRequest(
@@ -41,6 +45,6 @@ public record IssueRequest(
             IssuePriority priority,
             String assigneeUsername,
             LocalDate dueDate) {
-        this(title, description, status, priority, assigneeUsername, dueDate, List.of());
+        this(title, description, status, priority, assigneeUsername, dueDate, null, List.of());
     }
 }
