@@ -14,6 +14,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class IssueTimeEntryServiceTest {
@@ -56,6 +57,21 @@ class IssueTimeEntryServiceTest {
         List<TimeEntryResponse> response = service.findAll(1L, 5L, "duong");
 
         assertThat(response).extracting(TimeEntryResponse::minutes).containsExactly(30, 45);
+    }
+
+    @Test
+    void update_shouldAllowEntryOwner() {
+        Issue issue = accessibleIssue("duong");
+        User user = issue.getProject().getOwner();
+        IssueTimeEntry entry = entry(7L, issue, user, 30, LocalDate.of(2026, 10, 5));
+        when(timeEntryRepository.findByIdAndIssueId(7L, 5L)).thenReturn(Optional.of(entry));
+        when(timeEntryRepository.save(entry)).thenReturn(entry);
+
+        TimeEntryResponse response = service.update(1L, 5L, 7L,
+                new TimeEntryRequest(60, LocalDate.of(2026, 10, 5), "Done"), "duong");
+
+        assertThat(response.minutes()).isEqualTo(60);
+        verify(timeEntryRepository).save(entry);
     }
 
     private IssueTimeEntry entry(Long id, Issue issue, User user, int minutes, LocalDate date) {
