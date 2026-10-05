@@ -339,6 +339,13 @@ export function createTimeEntry(projectId: number, issueId: number, minutes: num
   })
 }
 
+export function updateTimeEntry(projectId: number, issueId: number, entry: TimeEntry) {
+  return apiFetch<TimeEntry>(`/projects/${projectId}/issues/${issueId}/time-entries/${entry.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ minutes: entry.minutes, workDate: entry.workDate, note: entry.note }),
+  })
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
