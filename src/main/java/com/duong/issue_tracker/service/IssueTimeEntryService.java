@@ -48,6 +48,12 @@ public class IssueTimeEntryService {
         return toResponse(timeEntryRepository.save(entry));
     }
 
+    @Transactional
+    public void delete(Long projectId, Long issueId, Long entryId, String username) {
+        findAccessibleIssue(projectId, issueId, username);
+        timeEntryRepository.delete(findOwnEntry(issueId, entryId, username));
+    }
+
     private IssueTimeEntry findOwnEntry(Long issueId, Long entryId, String username) {
         IssueTimeEntry entry = timeEntryRepository.findByIdAndIssueId(entryId, issueId)
                 .orElseThrow(() -> new ResourceNotFoundException("Time entry not found: " + entryId));
