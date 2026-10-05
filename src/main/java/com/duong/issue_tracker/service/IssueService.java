@@ -103,9 +103,11 @@ public class IssueService {
         IssuePriority oldPriority = issue.getPriority();
         String oldAssignee = issue.getAssignee() == null ? null : issue.getAssignee().getUsername();
         LocalDate oldDueDate = issue.getDueDate();
+        Integer oldEstimateMinutes = issue.getEstimateMinutes();
         apply(issue, request, projectId);
         Issue savedIssue = issueRepository.save(issue);
-        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority, oldAssignee, oldDueDate);
+        recordChanges(savedIssue, actor, oldTitle, oldDescription, oldStatus, oldPriority,
+                oldAssignee, oldDueDate, oldEstimateMinutes);
         return toResponse(savedIssue);
     }
 
@@ -140,7 +142,7 @@ public class IssueService {
 
     private void recordChanges(Issue issue, User actor, String oldTitle, String oldDescription,
                                IssueStatus oldStatus, IssuePriority oldPriority, String oldAssignee,
-                               LocalDate oldDueDate) {
+                               LocalDate oldDueDate, Integer oldEstimateMinutes) {
         if (!Objects.equals(oldTitle, issue.getTitle())) {
             record(issue, actor, IssueHistoryEventType.UPDATED, "title", oldTitle, issue.getTitle());
         }
@@ -161,6 +163,11 @@ public class IssueService {
             record(issue, actor, IssueHistoryEventType.DUE_DATE_CHANGED, "dueDate",
                     oldDueDate == null ? null : oldDueDate.toString(),
                     issue.getDueDate() == null ? null : issue.getDueDate().toString());
+        }
+        if (!Objects.equals(oldEstimateMinutes, issue.getEstimateMinutes())) {
+            record(issue, actor, IssueHistoryEventType.ESTIMATE_CHANGED, "estimateMinutes",
+                    oldEstimateMinutes == null ? null : oldEstimateMinutes.toString(),
+                    issue.getEstimateMinutes() == null ? null : issue.getEstimateMinutes().toString());
         }
     }
 
