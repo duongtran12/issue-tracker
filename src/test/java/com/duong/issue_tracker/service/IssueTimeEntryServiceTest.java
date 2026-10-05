@@ -10,6 +10,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,30 @@ class IssueTimeEntryServiceTest {
         assertThat(response.minutes()).isEqualTo(90);
         assertThat(response.note()).isEqualTo("Review release");
         assertThat(response.username()).isEqualTo("duong");
+    }
+
+    @Test
+    void findAll_shouldReturnNewestWorkFirst() {
+        Issue issue = accessibleIssue("duong");
+        User user = issue.getProject().getOwner();
+        IssueTimeEntry newer = entry(2L, issue, user, 30, LocalDate.of(2026, 10, 5));
+        IssueTimeEntry older = entry(1L, issue, user, 45, LocalDate.of(2026, 10, 4));
+        when(timeEntryRepository.findAllByIssueIdOrderByWorkDateDescIdDesc(5L))
+                .thenReturn(List.of(newer, older));
+
+        List<TimeEntryResponse> response = service.findAll(1L, 5L, "duong");
+
+        assertThat(response).extracting(TimeEntryResponse::minutes).containsExactly(30, 45);
+    }
+
+    private IssueTimeEntry entry(Long id, Issue issue, User user, int minutes, LocalDate date) {
+        IssueTimeEntry entry = new IssueTimeEntry();
+        entry.setId(id);
+        entry.setIssue(issue);
+        entry.setUser(user);
+        entry.setMinutes(minutes);
+        entry.setWorkDate(date);
+        return entry;
     }
 
     private Issue accessibleIssue(String username) {
