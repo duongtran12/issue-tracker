@@ -346,6 +346,12 @@ export function updateTimeEntry(projectId: number, issueId: number, entry: TimeE
   })
 }
 
+export function deleteTimeEntry(projectId: number, issueId: number, entryId: number) {
+  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/time-entries/${entryId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
