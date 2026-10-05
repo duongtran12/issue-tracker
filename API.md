@@ -181,6 +181,16 @@ PUT    /api/projects/{projectId}/issues/{issueId}/time-entries/{entryId}
 DELETE /api/projects/{projectId}/issues/{issueId}/time-entries/{entryId}
 ```
 
+```json
+{
+  "minutes": 90,
+  "workDate": "2026-10-05",
+  "note": "Reviewed the production release"
+}
+```
+
+Time must be positive and cannot be logged for a future date. Project members can view all entries, but may only edit or delete their own entries.
+
 Comment body:
 
 ```json
