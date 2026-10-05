@@ -39,6 +39,24 @@ public class IssueTimeEntryService {
         return toResponse(timeEntryRepository.save(entry));
     }
 
+    @Transactional
+    public TimeEntryResponse update(Long projectId, Long issueId, Long entryId,
+                                    TimeEntryRequest request, String username) {
+        findAccessibleIssue(projectId, issueId, username);
+        IssueTimeEntry entry = findOwnEntry(issueId, entryId, username);
+        apply(entry, request);
+        return toResponse(timeEntryRepository.save(entry));
+    }
+
+    private IssueTimeEntry findOwnEntry(Long issueId, Long entryId, String username) {
+        IssueTimeEntry entry = timeEntryRepository.findByIdAndIssueId(entryId, issueId)
+                .orElseThrow(() -> new ResourceNotFoundException("Time entry not found: " + entryId));
+        if (!entry.getUser().getUsername().equals(username)) {
+            throw new ResourceNotFoundException("Time entry not found: " + entryId);
+        }
+        return entry;
+    }
+
     private void apply(IssueTimeEntry entry, TimeEntryRequest request) {
         entry.setMinutes(request.minutes());
         entry.setWorkDate(request.workDate());
