@@ -332,6 +332,13 @@ export function listTimeEntries(projectId: number, issueId: number) {
   return apiFetch<TimeEntry[]>(`/projects/${projectId}/issues/${issueId}/time-entries`)
 }
 
+export function createTimeEntry(projectId: number, issueId: number, minutes: number, workDate: string, note: string) {
+  return apiFetch<TimeEntry>(`/projects/${projectId}/issues/${issueId}/time-entries`, {
+    method: 'POST',
+    body: JSON.stringify({ minutes, workDate, note: note.trim() || null }),
+  })
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
