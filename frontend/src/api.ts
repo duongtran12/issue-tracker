@@ -328,6 +328,10 @@ export function deleteChecklistItem(projectId: number, issueId: number, itemId: 
   })
 }
 
+export function listTimeEntries(projectId: number, issueId: number) {
+  return apiFetch<TimeEntry[]>(`/projects/${projectId}/issues/${issueId}/time-entries`)
+}
+
 export function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
