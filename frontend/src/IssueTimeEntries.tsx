@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createTimeEntry, deleteTimeEntry, listTimeEntries } from './api'
+import { createTimeEntry, deleteTimeEntry, listTimeEntries, updateTimeEntry } from './api'
 import type { TimeEntry } from './api'
 import type { FormEvent } from 'react'
 import { formatDuration } from './duration'
@@ -13,6 +13,9 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
   const [minutes, setMinutes] = useState('')
   const [workDate, setWorkDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [note, setNote] = useState('')
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editMinutes, setEditMinutes] = useState('')
+  const [editNote, setEditNote] = useState('')
   const totalMinutes = useMemo(() => entries.reduce((sum, entry) => sum + entry.minutes, 0), [entries])
   const remainingMinutes = estimateMinutes === null ? null : estimateMinutes - totalMinutes
 
@@ -44,6 +47,25 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to delete time entry')
     }
+  }
+
+  const saveEntry = async (entry: TimeEntry) => {
+    setError('')
+    try {
+      const updated = await updateTimeEntry(projectId, issueId, {
+        ...entry, minutes: Number(editMinutes), note: editNote.trim() || null,
+      })
+      setEntries((current) => current.map((item) => item.id === updated.id ? updated : item))
+      setEditingId(null)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Unable to update time entry')
+    }
+  }
+
+  const startEditing = (entry: TimeEntry) => {
+    setEditingId(entry.id)
+    setEditMinutes(String(entry.minutes))
+    setEditNote(entry.note ?? '')
   }
 
   return <section className="time-panel" aria-labelledby="time-heading">
