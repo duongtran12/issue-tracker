@@ -385,3 +385,10 @@
 .time-entry-list small { color: #99a69c; }
 .time-entry-actions { display: inline-flex; align-items: center; gap: 5px; }
 .time-entry-edit { display: grid; grid-column: 1 / -1; grid-template-columns: 90px 1fr auto; gap: 8px; }
+@media (max-width: 650px) {
+  .board-filter-row { margin: -4px 18px 12px; }
+  .time-entry-form { grid-template-columns: 1fr 1fr; }
+  .time-entry-form input:nth-child(3), .time-entry-form button { grid-column: 1 / -1; }
+  .time-entry-list li { grid-template-columns: 60px 1fr auto; }
+  .time-entry-list small { grid-column: 2; }
+}
