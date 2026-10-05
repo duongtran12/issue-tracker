@@ -67,6 +67,9 @@ public class Issue {
     @Column
     private LocalDate dueDate;
 
+    @Column
+    private Integer estimateMinutes;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "issue_labels",
             joinColumns = @JoinColumn(name = "issue_id"),
