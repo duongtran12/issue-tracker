@@ -353,6 +353,7 @@
 .label-actions { display: inline-flex; align-items: center; gap: 8px; }
 .issue-label { display: inline-flex; align-items: center; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; line-height: 1; padding: 6px 10px; }
 .issue-label-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.issue-estimate { margin-top: 8px; color: #829187; font: 10px 'DM Mono', monospace; }
 .label-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
 .label-checkboxes label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; margin: 0; }
 .label-picker { margin: 0; padding: 0; border: 0; }
