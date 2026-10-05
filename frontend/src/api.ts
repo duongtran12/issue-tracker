@@ -138,6 +138,18 @@ export type ChecklistItem = {
   updatedAt: string
 }
 
+export type TimeEntry = {
+  id: number
+  issueId: number
+  userId: number
+  username: string
+  minutes: number
+  workDate: string
+  note: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export type IssueHistory = {
   id: number
   issueId: number
