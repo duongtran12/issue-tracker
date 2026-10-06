@@ -62,6 +62,21 @@ class IssueTimeEntryServiceTest {
     }
 
     @Test
+    void findAll_shouldHideEntriesFromProjectOutsider() {
+        User owner = new User();
+        owner.setUsername("duong");
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectMemberRepository.existsByProjectIdAndUserUsername(1L, "intruder"))
+                .thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.findAll(1L, 5L, "intruder"));
+    }
+
+    @Test
     void update_shouldAllowEntryOwner() {
         Issue issue = accessibleIssue("duong");
         User user = issue.getProject().getOwner();
