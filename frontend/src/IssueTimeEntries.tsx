@@ -3,6 +3,7 @@ import { createTimeEntry, deleteTimeEntry, listTimeEntries, updateTimeEntry } fr
 import type { TimeEntry } from './api'
 import type { FormEvent } from 'react'
 import { formatDuration } from './duration'
+import { localDateInputValue } from './dates'
 
 type Props = { projectId: number; issueId: number; username: string; estimateMinutes: number | null }
 
@@ -11,7 +12,8 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [minutes, setMinutes] = useState('')
-  const [workDate, setWorkDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [workDate, setWorkDate] = useState(localDateInputValue)
+  const today = localDateInputValue()
   const [note, setNote] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editMinutes, setEditMinutes] = useState('')
@@ -71,7 +73,7 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
   return <section className="time-panel" aria-labelledby="time-heading">
     <div className="checklist-heading"><h3 id="time-heading">Time tracking</h3><span>{formatDuration(totalMinutes)}</span></div>
     {estimateMinutes !== null && <p className={`time-variance ${remainingMinutes !== null && remainingMinutes < 0 ? 'over-budget' : ''}`}>{remainingMinutes !== null && remainingMinutes >= 0 ? `${formatDuration(remainingMinutes)} remaining` : `${formatDuration(Math.abs(remainingMinutes ?? 0))} over estimate`}</p>}
-    <form className="time-entry-form" onSubmit={addEntry}><input type="number" min="1" value={minutes} onChange={(event) => setMinutes(event.target.value)} placeholder="Minutes" required /><input type="date" value={workDate} onChange={(event) => setWorkDate(event.target.value)} required /><input value={note} onChange={(event) => setNote(event.target.value)} placeholder="What did you work on?" maxLength={1000} /><button className="create-button" disabled={!minutes}>Log time</button></form>
+    <form className="time-entry-form" onSubmit={addEntry}><input type="number" min="1" value={minutes} onChange={(event) => setMinutes(event.target.value)} placeholder="Minutes" required /><input type="date" max={today} value={workDate} onChange={(event) => setWorkDate(event.target.value)} required /><input value={note} onChange={(event) => setNote(event.target.value)} placeholder="What did you work on?" maxLength={1000} /><button className="create-button" disabled={!minutes}>Log time</button></form>
     {error && <p className="activity-error">{error}</p>}
     {loading ? <p className="activity-loading">Loading time entries...</p> : <ul className="time-entry-list">{entries.map((entry) => <li key={entry.id}>{editingId === entry.id ? <div className="time-entry-edit"><input type="number" min="1" value={editMinutes} onChange={(event) => setEditMinutes(event.target.value)} /><input value={editNote} onChange={(event) => setEditNote(event.target.value)} maxLength={1000} /><button type="button" className="create-button" onClick={() => saveEntry(entry)}>Save</button></div> : <><strong>{formatDuration(entry.minutes)}</strong><span>{entry.note ?? 'No note'}</span><small>{entry.username} · {entry.workDate}</small>{entry.username === username && <span className="time-entry-actions"><button className="filter" type="button" onClick={() => startEditing(entry)}>Edit</button><button className="icon-button" type="button" aria-label={`Delete ${entry.minutes} minute time entry`} onClick={() => removeEntry(entry.id)}>×</button></span>}</>}</li>)}{entries.length === 0 && <li className="activity-empty">No time logged yet.</li>}</ul>}
   </section>
