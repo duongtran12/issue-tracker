@@ -16,6 +16,7 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
   const today = localDateInputValue()
   const [note, setNote] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(null)
   const [editMinutes, setEditMinutes] = useState('')
   const [editNote, setEditNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -35,6 +36,7 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
     event.preventDefault()
     if (submitting) return
     setError('')
+    setConfirmingDeleteId(null)
     setSubmitting(true)
     try {
       const created = await createTimeEntry(projectId, issueId, Number(minutes), workDate, note)
@@ -59,6 +61,7 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
       setError(reason instanceof Error ? reason.message : 'Unable to delete time entry')
     } finally {
       setSubmitting(false)
+      setConfirmingDeleteId(null)
     }
   }
 
@@ -80,6 +83,7 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
   }
 
   const startEditing = (entry: TimeEntry) => {
+    setConfirmingDeleteId(null)
     setEditingId(entry.id)
     setEditMinutes(String(entry.minutes))
     setEditNote(entry.note ?? '')
@@ -96,6 +100,6 @@ export default function IssueTimeEntries({ projectId, issueId, username, estimat
     {estimateMinutes !== null && <p className={`time-variance ${remainingMinutes !== null && remainingMinutes < 0 ? 'over-budget' : ''}`}>{remainingMinutes !== null && remainingMinutes >= 0 ? `${formatDuration(remainingMinutes)} remaining` : `${formatDuration(Math.abs(remainingMinutes ?? 0))} over estimate`}</p>}
     <form className="time-entry-form" onSubmit={addEntry}><input type="number" min="1" value={minutes} onChange={(event) => setMinutes(event.target.value)} placeholder="Minutes" required disabled={submitting} /><input type="date" max={today} value={workDate} onChange={(event) => setWorkDate(event.target.value)} required disabled={submitting} /><input value={note} onChange={(event) => setNote(event.target.value)} placeholder="What did you work on?" maxLength={1000} disabled={submitting} /><button className="create-button" disabled={!minutes || submitting}>{submitting ? 'Working...' : 'Log time'}</button></form>
     {error && <p className="activity-error">{error}</p>}
-    {loading ? <p className="activity-loading">Loading time entries...</p> : <ul className="time-entry-list">{entries.map((entry) => <li key={entry.id}>{editingId === entry.id ? <div className="time-entry-edit"><input type="number" min="1" value={editMinutes} onChange={(event) => setEditMinutes(event.target.value)} disabled={submitting} /><input value={editNote} onChange={(event) => setEditNote(event.target.value)} maxLength={1000} disabled={submitting} /><button type="button" className="filter" onClick={cancelEditing} disabled={submitting}>Cancel</button><button type="button" className="create-button" onClick={() => saveEntry(entry)} disabled={submitting || !hasValidEditMinutes}>{submitting ? 'Saving...' : 'Save'}</button></div> : <><strong>{formatDuration(entry.minutes)}</strong><span>{entry.note ?? 'No note'}</span><small>{entry.username} · {entry.workDate}</small>{entry.username === username && <span className="time-entry-actions"><button className="filter" type="button" onClick={() => startEditing(entry)} disabled={submitting}>Edit</button><button className="icon-button" type="button" aria-label={`Delete ${entry.minutes} minute time entry`} onClick={() => removeEntry(entry.id)} disabled={submitting}>×</button></span>}</>}</li>)}{entries.length === 0 && <li className="activity-empty">No time logged yet.</li>}</ul>}
+    {loading ? <p className="activity-loading">Loading time entries...</p> : <ul className="time-entry-list">{entries.map((entry) => <li key={entry.id}>{editingId === entry.id ? <div className="time-entry-edit"><input type="number" min="1" value={editMinutes} onChange={(event) => setEditMinutes(event.target.value)} disabled={submitting} /><input value={editNote} onChange={(event) => setEditNote(event.target.value)} maxLength={1000} disabled={submitting} /><button type="button" className="filter" onClick={cancelEditing} disabled={submitting}>Cancel</button><button type="button" className="create-button" onClick={() => saveEntry(entry)} disabled={submitting || !hasValidEditMinutes}>{submitting ? 'Saving...' : 'Save'}</button></div> : <><strong>{formatDuration(entry.minutes)}</strong><span>{entry.note ?? 'No note'}</span><small>{entry.username} · {entry.workDate}</small>{entry.username === username && <span className="time-entry-actions">{confirmingDeleteId === entry.id ? <><button className="filter" type="button" onClick={() => setConfirmingDeleteId(null)} disabled={submitting}>Cancel</button><button className="danger-button" type="button" onClick={() => removeEntry(entry.id)} disabled={submitting}>{submitting ? 'Deleting...' : 'Confirm delete'}</button></> : <><button className="filter" type="button" onClick={() => startEditing(entry)} disabled={submitting}>Edit</button><button className="icon-button" type="button" aria-label={`Delete ${entry.minutes} minute time entry`} onClick={() => setConfirmingDeleteId(entry.id)} disabled={submitting}>×</button></>}</span>}</>}</li>)}{entries.length === 0 && <li className="activity-empty">No time logged yet.</li>}</ul>}
   </section>
 }
