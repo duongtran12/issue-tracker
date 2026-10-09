@@ -384,7 +384,7 @@
 .time-entry-list li { display: grid; grid-template-columns: 70px 1fr auto auto; align-items: center; gap: 10px; color: #526258; font-size: 11px; }
 .time-entry-list small { color: #99a69c; }
 .time-entry-actions { display: inline-flex; align-items: center; gap: 5px; }
-.time-entry-edit { display: grid; grid-column: 1 / -1; grid-template-columns: 90px 1fr auto; gap: 8px; }
+.time-entry-edit { display: grid; grid-column: 1 / -1; grid-template-columns: 90px 1fr auto auto; gap: 8px; }
 @media (max-width: 650px) {
   .board-filter-row { margin: -4px 18px 12px; }
   .time-entry-form { grid-template-columns: 1fr 1fr; }
