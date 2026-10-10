@@ -28,14 +28,6 @@ docker compose up --build
 
 Open `http://localhost:5173`. The frontend proxies `/api` requests to the backend inside the Compose network. The API is also available directly at `http://localhost:8080`.
 
-Stop the stack while preserving database data:
-
-```powershell
-docker compose down
-```
-
-To also remove the local PostgreSQL volume, explicitly run `docker compose down --volumes`.
-
 ### Run services manually
 
 Create a PostgreSQL database named `issue_tracker`, then run:
@@ -71,13 +63,6 @@ Tests use the H2 test profile and do not require a running database.
 
 Never use the development JWT fallback in a deployed environment.
 
-## Health checks
-
-- `GET /actuator/health` reports application readiness without authentication.
-- `GET /actuator/info` reports the application name and build version.
-
-Docker Compose uses the health endpoint before starting the frontend.
-
 ## Frontend
 
 The Vite frontend lives in `frontend/` and expects the backend API at `/api` by default.
@@ -94,10 +79,4 @@ To point the frontend at another backend, create `frontend/.env.local`:
 VITE_API_URL=http://localhost:8080/api
 ```
 
-The dashboard supports registration and JWT login, project creation/editing/deletion and member management, issue creation/editing/deletion, assignment, due dates, estimates and project-scoped labels, status updates, filtering, comments, checklists, time tracking, and issue history.
-
-Project members can create color-coded labels from the dashboard and reuse them across issues. Deleting a label safely removes its issue associations without deleting the issues themselves.
-
-Each issue also has an ordered checklist in the details panel, including completion tracking and a visual progress indicator.
-
-Teams can estimate issues in minutes, log dated work entries, compare actual time against estimates, and safely manage only their own time records.
+The dashboard supports registration and JWT login, project and member management, issue creation/editing/deletion and assignment, status updates, filtering, comments, and issue history.

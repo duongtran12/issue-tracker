@@ -1,7 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
-const REQUEST_TIMEOUT_MS = 15_000
 export const AUTH_EXPIRED_EVENT = 'issue-tracker:auth-expired'
-export const AUTH_TOKEN_KEY = 'issue_tracker_token'
 
 export type Project = {
   id: number
@@ -9,13 +7,6 @@ export type Project = {
   key: string
   description: string | null
   ownerUsername: string
-}
-
-export type Label = {
-  id: number
-  projectId: number
-  name: string
-  color: string
 }
 
 export type BackendIssue = {
@@ -27,16 +18,8 @@ export type BackendIssue = {
   priority: 'LOW' | 'MEDIUM' | 'HIGH'
   reporterUsername: string
   assigneeUsername: string | null
-  dueDate: string | null
-  estimateMinutes: number | null
-  labels: Label[]
   createdAt: string
   updatedAt: string
-}
-
-export type IssueMutation = Pick<BackendIssue,
-  'title' | 'description' | 'status' | 'priority' | 'assigneeUsername' | 'dueDate' | 'estimateMinutes'> & {
-  labelIds?: number[]
 }
 
 export type IssuePage = {
@@ -84,26 +67,17 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem(AUTH_TOKEN_KEY)
+  const token = localStorage.getItem('issue_tracker_token')
   const headers = new Headers(options.headers)
   if (options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  const signal = options.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS)
-  let response: Response
-  try {
-    response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, signal })
-  } catch (reason) {
-    if (reason instanceof DOMException && reason.name === 'TimeoutError') {
-      throw new ApiError('The API request timed out. Please try again.', 0)
-    }
-    throw new ApiError('Unable to reach the API. Check your connection and try again.', 0)
-  }
+  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
   if (!response.ok) {
     if (response.status === 401 && token) {
-      localStorage.removeItem(AUTH_TOKEN_KEY)
+      localStorage.removeItem('issue_tracker_token')
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
     }
     const body = await response.json().catch(() => null) as ApiErrorBody | null
@@ -128,34 +102,12 @@ export type IssueComment = {
   updatedAt: string
 }
 
-export type ChecklistItem = {
-  id: number
-  issueId: number
-  content: string
-  completed: boolean
-  position: number
-  createdAt: string
-  updatedAt: string
-}
-
-export type TimeEntry = {
-  id: number
-  issueId: number
-  userId: number
-  username: string
-  minutes: number
-  workDate: string
-  note: string | null
-  createdAt: string
-  updatedAt: string
-}
-
 export type IssueHistory = {
   id: number
   issueId: number
   actorId: number | null
   actorUsername: string | null
-  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED' | 'DUE_DATE_CHANGED' | 'ESTIMATE_CHANGED'
+  eventType: 'CREATED' | 'UPDATED' | 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED'
   fieldName: string | null
   oldValue: string | null
   newValue: string | null
@@ -174,7 +126,7 @@ export async function login(username: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })
-  localStorage.setItem(AUTH_TOKEN_KEY, result.accessToken)
+  localStorage.setItem('issue_tracker_token', result.accessToken)
   return result
 }
 
@@ -196,13 +148,6 @@ export function createProject(request: Pick<Project, 'name' | 'key' | 'descripti
   })
 }
 
-export function updateProject(projectId: number, request: Pick<Project, 'name' | 'key' | 'description'>) {
-  return apiFetch<Project>(`/projects/${projectId}`, {
-    method: 'PUT',
-    body: JSON.stringify(request),
-  })
-}
-
 export function deleteProject(projectId: number) {
   return apiFetch<void>(`/projects/${projectId}`, { method: 'DELETE' })
 }
@@ -215,7 +160,7 @@ export function listProjectIssues(projectId: number) {
   return apiFetch<IssuePage>(`/projects/${projectId}/issues?size=100&sort=createdAt,desc`)
 }
 
-export function createIssue(projectId: number, request: IssueMutation) {
+export function createIssue(projectId: number, request: Omit<BackendIssue, 'id' | 'projectId' | 'reporterUsername' | 'createdAt' | 'updatedAt'>) {
   return apiFetch<BackendIssue>(`/projects/${projectId}/issues`, {
     method: 'POST',
     body: JSON.stringify(request),
@@ -228,28 +173,6 @@ export function listProjects() {
 
 export function listProjectMembers(projectId: number) {
   return apiFetch<ProjectMember[]>(`/projects/${projectId}/members`)
-}
-
-export function listProjectLabels(projectId: number) {
-  return apiFetch<Label[]>(`/projects/${projectId}/labels`)
-}
-
-export function createProjectLabel(projectId: number, name: string, color: string) {
-  return apiFetch<Label>(`/projects/${projectId}/labels`, {
-    method: 'POST',
-    body: JSON.stringify({ name, color }),
-  })
-}
-
-export function updateProjectLabel(projectId: number, labelId: number, name: string, color: string) {
-  return apiFetch<Label>(`/projects/${projectId}/labels/${labelId}`, {
-    method: 'PUT',
-    body: JSON.stringify({ name, color }),
-  })
-}
-
-export function deleteProjectLabel(projectId: number, labelId: number) {
-  return apiFetch<void>(`/projects/${projectId}/labels/${labelId}`, { method: 'DELETE' })
 }
 
 export function addProjectMember(projectId: number, username: string) {
@@ -268,7 +191,7 @@ export function removeProjectMember(projectId: number, username: string) {
 export function updateIssue(
   projectId: number,
   issueId: number,
-  request: IssueMutation,
+  request: Omit<BackendIssue, 'id' | 'projectId' | 'reporterUsername' | 'createdAt' | 'updatedAt'>,
 ) {
   return apiFetch<BackendIssue>(`/projects/${projectId}/issues/${issueId}`, {
     method: 'PUT',
@@ -304,55 +227,7 @@ export function listIssueHistory(projectId: number, issueId: number) {
   return apiFetch<IssueHistory[]>(`/projects/${projectId}/issues/${issueId}/history`)
 }
 
-export function listChecklistItems(projectId: number, issueId: number) {
-  return apiFetch<ChecklistItem[]>(`/projects/${projectId}/issues/${issueId}/checklist`)
-}
-
-export function createChecklistItem(projectId: number, issueId: number, content: string) {
-  return apiFetch<ChecklistItem>(`/projects/${projectId}/issues/${issueId}/checklist`, {
-    method: 'POST',
-    body: JSON.stringify({ content }),
-  })
-}
-
-export function updateChecklistItem(projectId: number, issueId: number, item: ChecklistItem) {
-  return apiFetch<ChecklistItem>(`/projects/${projectId}/issues/${issueId}/checklist/${item.id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ content: item.content, completed: item.completed, position: item.position }),
-  })
-}
-
-export function deleteChecklistItem(projectId: number, issueId: number, itemId: number) {
-  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/checklist/${itemId}`, {
-    method: 'DELETE',
-  })
-}
-
-export function listTimeEntries(projectId: number, issueId: number) {
-  return apiFetch<TimeEntry[]>(`/projects/${projectId}/issues/${issueId}/time-entries`)
-}
-
-export function createTimeEntry(projectId: number, issueId: number, minutes: number, workDate: string, note: string) {
-  return apiFetch<TimeEntry>(`/projects/${projectId}/issues/${issueId}/time-entries`, {
-    method: 'POST',
-    body: JSON.stringify({ minutes, workDate, note: note.trim() || null }),
-  })
-}
-
-export function updateTimeEntry(projectId: number, issueId: number, entry: TimeEntry) {
-  return apiFetch<TimeEntry>(`/projects/${projectId}/issues/${issueId}/time-entries/${entry.id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ minutes: entry.minutes, workDate: entry.workDate, note: entry.note }),
-  })
-}
-
-export function deleteTimeEntry(projectId: number, issueId: number, entryId: number) {
-  return apiFetch<void>(`/projects/${projectId}/issues/${issueId}/time-entries/${entryId}`, {
-    method: 'DELETE',
-  })
-}
-
 export function logout() {
-  localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem('issue_tracker_token')
   window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
 }
