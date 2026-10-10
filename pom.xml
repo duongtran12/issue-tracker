@@ -11,34 +11,25 @@
 	<groupId>com.duong</groupId>
 	<artifactId>issue-tracker</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Issue Tracker</name>
-	<description>Collaborative project and issue tracking application</description>
-	<url>https://github.com/duongtran12/issue-tracker</url>
+	<name/>
+	<description/>
+	<url/>
 	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>https://opensource.org/licenses/MIT</url>
-		</license>
+		<license/>
 	</licenses>
 	<developers>
-		<developer>
-			<name>Duong Tran</name>
-		</developer>
+		<developer/>
 	</developers>
 	<scm>
-		<connection>scm:git:https://github.com/duongtran12/issue-tracker.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/duongtran12/issue-tracker.git</developerConnection>
-		<tag>HEAD</tag>
-		<url>https://github.com/duongtran12/issue-tracker</url>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
 	</scm>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -135,48 +126,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.6.2</version>
-				<executions>
-					<execution>
-						<id>enforce-toolchain</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireJavaVersion>
-									<version>[21,22)</version>
-								</requireJavaVersion>
-								<requireMavenVersion>
-									<version>[3.9,)</version>
-								</requireMavenVersion>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.13</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>report</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

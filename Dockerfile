@@ -11,15 +11,11 @@ COPY src ./src
 
 RUN ./mvnw -q -DskipTests package
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-RUN addgroup -S app && adduser -S app -G app
-
-COPY --chown=app:app --from=build /app/target/issue-tracker-0.0.1-SNAPSHOT.jar app.jar
-
-USER app
+COPY --from=build /app/target/issue-tracker-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 

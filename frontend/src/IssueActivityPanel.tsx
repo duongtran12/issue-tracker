@@ -2,13 +2,10 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createIssueComment, deleteIssueComment, listIssueComments, listIssueHistory, updateIssueComment } from './api'
 import type { IssueComment, IssueHistory } from './api'
-import IssueChecklist from './IssueChecklist'
-import IssueTimeEntries from './IssueTimeEntries'
 
 type IssueOption = {
   id: number
   title: string
-  estimateMinutes: number | null
 }
 
 type IssueActivityPanelProps = {
@@ -203,7 +200,5 @@ export default function IssueActivityPanel({ projectId, issues, username }: Issu
           </ol>
         </section>
       </div>}
-    {projectId && selectedIssue && <IssueChecklist key={selectedIssue.id} projectId={projectId} issueId={selectedIssue.id} />}
-    {projectId && selectedIssue && <IssueTimeEntries key={`time-${selectedIssue.id}`} projectId={projectId} issueId={selectedIssue.id} username={username} estimateMinutes={selectedIssue.estimateMinutes} />}
   </section>
 }

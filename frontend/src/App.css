@@ -43,8 +43,6 @@
 .danger-button { border: 1px solid #e7b8b0; border-radius: 5px; padding: 7px 10px; background: #fff4f1; color: #a34d45; font: 700 10px Manrope, sans-serif; cursor: pointer; }
 .danger-button:disabled { opacity: .5; cursor: not-allowed; }
 .project-delete-action { position: fixed; top: 18px; right: 18px; z-index: 10; }
-.project-settings-actions { position: fixed; top: 18px; right: 18px; z-index: 10; display: flex; gap: 8px; }
-.project-settings-actions .project-delete-action { position: static; }
 .create-button span { font-size: 16px; vertical-align: -1px; margin-right: 4px; }
 .page-heading { padding: 48px 42px 34px; display: flex; align-items: end; justify-content: space-between; gap: 20px; }
 .eyebrow { color: #e18154; margin-bottom: 12px; }
@@ -82,8 +80,6 @@
 .issue-card-top button { font: 700 9px Manrope, sans-serif; }
 .issue-id { color: #a0aca3; font: 10px 'DM Mono', monospace; }
 .issue-card h3 { min-height: 40px; margin: 12px 0 17px; font-size: 13px; line-height: 1.5; letter-spacing: -.1px; }
-.due-date { margin: -9px 0 12px; color: #718579; font: 9px 'DM Mono', monospace; }
-.due-date.overdue { color: #b44d43; font-weight: 700; }
 .card-footer { display: flex; align-items: center; gap: 8px; }
 .priority, .label { display: inline-flex; align-items: center; gap: 5px; color: #89968d; font: 10px 'DM Mono', monospace; }
 .priority i, .legend i { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: #e5a068; }
@@ -159,7 +155,7 @@
 .activity-error p { margin: 0; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media (max-width: 850px) { .sidebar { width: 205px; flex-basis: 205px; }.topbar, .page-heading { padding-left: 25px; padding-right: 25px; }.toolbar, .board, .board-footer { margin-left: 25px; margin-right: 25px; }.board { padding: 0; }.page-heading { display: block; }.heading-meta { margin-top: 22px; } }
-@media (max-width: 650px) { .app-shell { display: block; }.sidebar { width: 100%; height: auto; padding: 15px; }.brand { padding: 0 4px 16px; }.workspace-label, .workspace-switcher, .main-nav, .projects-heading, .project-list, .sidebar-bottom { display: none; }.project-settings-actions { position: static; justify-content: flex-end; padding: 10px 18px 0; background: #f7f8f5; }.content { width: 100%; }.topbar { min-height: 62px; padding: 0 18px; }.breadcrumbs { font-size: 11px; }.top-actions { gap: 8px; }.search input { width: 80px; }.create-button { padding: 9px 10px; }.page-heading { padding: 30px 18px 25px; }.page-heading h1 { font-size: 31px; }.toolbar { margin: 0 18px 20px; overflow-x: auto; }.filters { min-width: max-content; }.toolbar-actions { display: none; }.refresh-button { margin: 10px 18px 0 auto; }.empty-hint { margin: 18px; }.board { margin: 0 18px; display: block; }.column { margin-bottom: 25px; }.board-footer { margin: 10px 18px 20px; }.legend { display: none; }.activity-panel { margin: 24px 18px 0; }.activity-heading { align-items: stretch; flex-direction: column; }.activity-issue-select select { max-width: 100%; }.activity-columns { grid-template-columns: 1fr; gap: 22px; } }
+@media (max-width: 650px) { .app-shell { display: block; }.sidebar { width: 100%; height: auto; padding: 15px; }.brand { padding: 0 4px 16px; }.workspace-label, .workspace-switcher, .main-nav, .projects-heading, .project-list, .sidebar-bottom { display: none; }.content { width: 100%; }.topbar { min-height: 62px; padding: 0 18px; }.breadcrumbs { font-size: 11px; }.top-actions { gap: 8px; }.search input { width: 80px; }.create-button { padding: 9px 10px; }.page-heading { padding: 30px 18px 25px; }.page-heading h1 { font-size: 31px; }.toolbar { margin: 0 18px 20px; overflow-x: auto; }.filters { min-width: max-content; }.toolbar-actions { display: none; }.refresh-button { margin: 10px 18px 0 auto; }.empty-hint { margin: 18px; }.board { margin: 0 18px; display: block; }.column { margin-bottom: 25px; }.board-footer { margin: 10px 18px 20px; }.legend { display: none; }.activity-panel { margin: 24px 18px 0; }.activity-heading { align-items: stretch; flex-direction: column; }.activity-issue-select select { max-width: 100%; }.activity-columns { grid-template-columns: 1fr; gap: 22px; } }
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -343,52 +339,4 @@
     right: 0;
     border-right-color: var(--border);
   }
-}
-
-.labels-modal { max-width: 560px; }
-.label-create-form { display: grid; grid-template-columns: 1fr 52px auto; gap: 10px; align-items: center; }
-.label-create-form input[type='color'] { width: 52px; height: 42px; padding: 4px; }
-.label-list { display: grid; gap: 10px; max-height: 340px; overflow: auto; }
-.label-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.label-actions { display: inline-flex; align-items: center; gap: 8px; }
-.issue-label { display: inline-flex; align-items: center; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; line-height: 1; padding: 6px 10px; }
-.issue-label-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
-.issue-estimate { margin-top: 8px; color: #829187; font: 10px 'DM Mono', monospace; }
-.label-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
-.label-checkboxes label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; margin: 0; }
-.label-picker { margin: 0; padding: 0; border: 0; }
-.label-picker legend { margin-bottom: 8px; color: #526258; font-size: 11px; font-weight: 700; }
-.label-picker input { width: 15px; height: 15px; margin: 0; accent-color: #315f45; }
-.label-picker-empty { color: #99a69c; font-size: 11px; }
-.board-filter-row { display: flex; justify-content: flex-end; margin: -8px 42px 14px; }
-.label-filter { display: inline-flex; align-items: center; gap: 8px; color: #829187; font-size: 10px; font-weight: 700; }
-.label-filter select { border: 1px solid #dce5d9; border-radius: 5px; padding: 7px 28px 7px 9px; background: #fff; color: #26352c; }
-.checklist-panel { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8ece6; }
-.checklist-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.checklist-heading h3 { margin: 0; color: #26352c; font-size: 12px; }
-.checklist-heading span { color: #829187; font: 10px 'DM Mono', monospace; }
-.checklist-progress { height: 4px; margin: -4px 0 14px; overflow: hidden; border-radius: 999px; background: #e8ece6; }
-.checklist-progress span { display: block; height: 100%; border-radius: inherit; background: #315f45; transition: width 180ms ease; }
-.checklist-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 12px; }
-.checklist-add input { min-width: 0; border: 1px solid #dce5d9; border-radius: 5px; padding: 9px 10px; }
-.checklist-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.checklist-list li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 9px; color: #526258; font-size: 11px; }
-.checklist-list input { accent-color: #315f45; }
-.checklist-list .completed { color: #99a69c; text-decoration: line-through; }
-.time-panel { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8ece6; }
-.time-variance { margin: -5px 0 12px; color: #597565; font-size: 10px; }
-.time-variance.over-budget { color: #a34d45; }
-.time-entry-form { display: grid; grid-template-columns: 90px 140px 1fr auto; gap: 8px; margin-bottom: 14px; }
-.time-entry-form input, .time-entry-edit input { min-width: 0; border: 1px solid #dce5d9; border-radius: 5px; padding: 9px; }
-.time-entry-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.time-entry-list li { display: grid; grid-template-columns: 70px 1fr auto auto; align-items: center; gap: 10px; color: #526258; font-size: 11px; }
-.time-entry-list small { color: #99a69c; }
-.time-entry-actions { display: inline-flex; align-items: center; gap: 5px; }
-.time-entry-edit { display: grid; grid-column: 1 / -1; grid-template-columns: 90px 1fr auto auto; gap: 8px; }
-@media (max-width: 650px) {
-  .board-filter-row { margin: -4px 18px 12px; }
-  .time-entry-form { grid-template-columns: 1fr 1fr; }
-  .time-entry-form input:nth-child(3), .time-entry-form button { grid-column: 1 / -1; }
-  .time-entry-list li { grid-template-columns: 60px 1fr auto; }
-  .time-entry-list small { grid-column: 2; }
 }
