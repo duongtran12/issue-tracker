@@ -60,6 +60,16 @@ function App() {
   }, [])
 
   useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return
+      event.preventDefault()
+      document.querySelector<HTMLInputElement>('.search input')?.focus()
+    }
+    window.addEventListener('keydown', focusSearch)
+    return () => window.removeEventListener('keydown', focusSearch)
+  }, [])
+
+  useEffect(() => {
     if (!token) return
     getProfile()
       .then((profile) => setUsername(profile.username))
